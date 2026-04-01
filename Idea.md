@@ -78,3 +78,8 @@ Cấu trúc dữ liệu sử dụng mô hình RDBMS, bổ sung các trường th
 
 - Phân quyền truy cập chi tiết cho các API Endpoint (sử dụng hệ thống Dependency Injection của FastAPI) và giao diện dựa trên Role.
 - Kiểm thử luồng nghiệp vụ cuối toàn trình từ khi Khách hàng đặt đơn đến khi Nhân viên hoàn tất và điểm được cộng vào tài khoản.
+
+
+# Test sever
+- Vào môi trường ảo: .\.venv\Scripts\Activate.ps1
+- Chạy sever: uvicorn app.main:app --reload

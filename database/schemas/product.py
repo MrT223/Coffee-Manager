@@ -7,6 +7,7 @@ from decimal import Decimal
 class ProductBase(BaseModel):
     name: str = Field(..., max_length=200)
     price: Decimal = Field(..., gt=0)
+    quantity: int = Field(0, ge=0) 
     category_id: int
     image_url: Optional[str] = None
     status_id: int = 1
@@ -19,6 +20,7 @@ class ProductCreate(ProductBase):
 class ProductUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=200)
     price: Optional[Decimal] = Field(None, gt=0)
+    quantity: Optional[int] = Field(None, ge=0)
     category_id: Optional[int] = None
     image_url: Optional[str] = None
     status_id: Optional[int] = None

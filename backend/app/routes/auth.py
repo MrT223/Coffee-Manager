@@ -1,51 +1,64 @@
-# backend/app/api/auth.py
-from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
+# backend/app/routes/auth.py
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
-from database.connection import get_db 
-from database.schemas.user import UserCreate, UserRead, UserLogin
-from app.controllers import user as controller_user
+# Lưu ý: Sửa dòng get_db này theo đúng cấu trúc thư mục của bạn (ví dụ: database.database hoặc database.connection)
+from database.connection import get_db
+from app.controllers import user as crud_user
 from app.core import security
-from app.core.config import settings
+from database.schemas.user import UserCreate
 
 router = APIRouter()
 
-@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    """API Đăng ký tài khoản (UC-01)"""
-    # 1. Kiểm tra xem username đã tồn tại chưa
-    user = controller_user.get_user_by_username(db, username=user_in.username)
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="Username đã tồn tại. Vui lòng chọn tên khác."
-        )
+# Schema nhận JSON từ Frontend gửi lên
+class AuthRequest(BaseModel):
+    username: str
+    password: str
+    fullName: str = None
+    role_id: int = 1
+
+@router.post("/register")
+def register(req: AuthRequest, db: Session = Depends(get_db)):
+    # Kiểm tra trùng lặp
+    db_user = crud_user.get_user_by_username(db, username=req.username)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Tên đăng nhập đã tồn tại")
     
-    # 2. Tạo tài khoản mới
-    new_user = controller_user.create_user(db=db, user=user_in)
-    return new_user
+    # Tạo UserCreate schema để phù hợp với hàm crud_user.create_user của bạn
+    user_in = UserCreate(username=req.username, password=req.password)
+    new_user = crud_user.create_user(db, user=user_in)
+    
+    # Tạo Token
+    access_token = security.create_access_token(data={"sub": new_user.username})
+    
+    # FIX QUAN TRỌNG: Trả về cục "user" chứa chính xác "id"
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": new_user.id,
+            "username": new_user.username,
+            "role_id": new_user.role_id,
+        }
+    }
 
 @router.post("/login")
-def login(user_in: UserLogin, db: Session = Depends(get_db)):
-    """API Đăng nhập (UC-02)"""
-    # 1. Tìm người dùng trong DB
-    user = controller_user.get_user_by_username(db, username=user_in.username)
+def login(req: AuthRequest, db: Session = Depends(get_db)):
+    db_user = crud_user.get_user_by_username(db, username=req.username)
     
-    # 2. Kiểm tra user có tồn tại không và mật khẩu có đúng không
-    if not user or not security.verify_password(user_in.password, user.password):
-        raise HTTPException(
-            status_code=401,
-            detail="Sai username hoặc mật khẩu",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    if not db_user or not security.verify_password(req.password, db_user.password):
+        raise HTTPException(status_code=400, detail="Sai tên đăng nhập hoặc mật khẩu")
     
-    # 3. Nếu đúng, tạo JWT Token
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(
-        data={"sub": user.username, "role_id": user.role_id, "user_id": user.id},
-        expires_delta=access_token_expires
-    )
+    access_token = security.create_access_token(data={"sub": db_user.username})
     
-    # Trả về token cho client
-    return {"access_token": access_token, "token_type": "bearer"}
+    # FIX QUAN TRỌNG: Trả về cục "user" chứa chính xác "id" cho Frontend
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": db_user.id,
+            "username": db_user.username,
+            "role_id": db_user.role_id,
+        }
+    }

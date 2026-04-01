@@ -1,3 +1,33 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* src/index.css */
+@import "tailwindcss";
+
+/* Định nghĩa Palette màu sắc (Tailwind v4 mới dùng biến CSS) */
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --color-amber-50: #fff9ed;
+  --color-amber-100: #ffefcd;
+  --color-amber-200: #ffe19e;
+  --color-amber-600: #d97706;
+  --color-amber-700: #a16207;
+  --color-amber-800: #854d0e;
+  --color-amber-900: #713f12;
+  --color-rose-100: #ffe4e6;
+  --color-rose-900: #881337;
+  --color-emerald-100: #ecfdf5;
+  --color-emerald-900: #064e3b;
+}
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F8F9FA;
+}
+
+input::placeholder {
+  color: #9ca3af; /* zinc-400 */
+}

@@ -10,7 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 
 # --- IMPORT ROUTER ---
-from app.routes import auth
+from app.routes.auth import router as auth_router
+from app.routes.category import router as category_router
+from app.routes.product import router as product_router
+from app.routes.order import router as order_router
+from app.routes.reward import router as reward_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -19,16 +23,18 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # --- KẾT NỐI API ---
-# Đường dẫn cuối cùng sẽ là: /api/auth/register và /api/auth/login
-app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-
+app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(category_router, prefix="/api/categories", tags=["Categories"])
+app.include_router(product_router, prefix="/api/products", tags=["Products"])
+app.include_router(order_router, prefix="/api/orders", tags=["Orders"])
+app.include_router(reward_router, prefix="/api/rewards", tags=["Rewards"])
 
 @app.get("/")
 def root():
