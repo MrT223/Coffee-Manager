@@ -6,7 +6,7 @@ from pydantic import BaseModel
 # Lưu ý: Sửa dòng get_db này theo đúng cấu trúc thư mục của bạn (ví dụ: database.database hoặc database.connection)
 from database.connection import get_db
 from app.controllers import user as crud_user
-from app.core import security
+from app import security
 from database.schemas.user import UserCreate
 
 router = APIRouter()

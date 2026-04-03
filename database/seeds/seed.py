@@ -73,28 +73,28 @@ def run_seed():
 
     db = SessionLocal()
     try:
-        print("🌱 Seeding roles...")
+        print("Seeding roles...")
         seed_table(db, Role, ROLES, "role_name")
 
-        print("🌱 Seeding product_statuses...")
+        print("Seeding product_statuses...")
         seed_table(db, ProductStatus, PRODUCT_STATUSES, "status_name")
 
-        print("🌱 Seeding order_statuses...")
+        print("Seeding order_statuses...")
         seed_table(db, OrderStatus, ORDER_STATUSES, "status_name")
 
-        print("🌱 Seeding reward_types...")
+        print("Seeding reward_types...")
         seed_table(db, RewardType, REWARD_TYPES, "type_name")
 
-        print("🌱 Seeding point_types...")
+        print("Seeding point_types...")
         seed_table(db, PointType, POINT_TYPES, "type_name")
 
-        print("🌱 Seeding loyalty_config...")
+        print("Seeding loyalty_config...")
         seed_loyalty_config(db)
 
-        print("✅ Seed completed successfully!")
+        print("Seed completed successfully!")
     except Exception as e:
         db.rollback()
-        print(f"❌ Seed failed: {e}")
+        print(f"Seed failed: {e}")
         raise
     finally:
         db.close()

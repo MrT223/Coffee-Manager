@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 from database.models.user import User
 from database.schemas.user import UserCreate
-from app.core.security import get_password_hash
+from app.security import get_password_hash
 
 def get_user_by_username(db: Session, username: str):
     """Tìm người dùng bằng username."""

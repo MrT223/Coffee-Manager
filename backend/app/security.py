@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import jwt
 import bcrypt
-from app.core.config import settings
+from app.config import settings
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Kiểm tra xem mật khẩu người dùng nhập có khớp với mật khẩu đã băm trong DB không."""
