@@ -47,8 +47,9 @@ CREATE TABLE order_statuses (
 INSERT INTO order_statuses (status_name, sort_order, description) VALUES
     ('Chờ xác nhận',  1, 'Đơn hàng mới, chờ nhân viên xác nhận'),
     ('Đang chuẩn bị', 2, 'Nhân viên đang pha chế'),
-    ('Đã hoàn thành', 3, 'Đơn hàng đã giao cho khách'),
-    ('Đã hủy',        4, 'Đơn hàng bị hủy');
+    ('Đang giao hàng', 3, 'Đơn hàng đang được giao cho khách'),
+    ('Đã hoàn thành', 4, 'Đơn hàng đã giao xong'),
+    ('Đã hủy',        5, 'Đơn hàng bị hủy');
 
 -- 1.4 REWARD_TYPES – Loại quà/ưu đãi
 CREATE TABLE reward_types (
@@ -114,6 +115,7 @@ CREATE TABLE products (
     id          SERIAL PRIMARY KEY,
     name        VARCHAR(200)   NOT NULL,
     price       NUMERIC(12, 2) NOT NULL CHECK (price > 0),
+    quantity    INT            DEFAULT 0,
     category_id INT            NOT NULL,
     image_url   VARCHAR(500),
     status_id   INT            NOT NULL DEFAULT 1,   -- FK → product_statuses
@@ -152,7 +154,7 @@ CREATE TABLE orders (
 );
 
 CREATE INDEX idx_orders_user_date ON orders (user_id, order_date DESC);
-CREATE INDEX idx_orders_status    ON orders (status_id) WHERE status_id IN (1, 2);
+CREATE INDEX idx_orders_status    ON orders (status_id) WHERE status_id IN (1, 2, 3);
 
 -- 2.5 ORDER_DETAILS – Chi tiết đơn hàng
 -- UC: UC-07, UC-08, UC-10
@@ -183,6 +185,7 @@ CREATE TABLE rewards (
     points_required INT            NOT NULL CHECK (points_required > 0),
     reward_type_id  INT            NOT NULL,          -- FK → reward_types
     discount_value  NUMERIC(12, 2) CHECK (discount_value >= 0),
+    image_url       VARCHAR(500),
     is_active       BOOLEAN        NOT NULL DEFAULT TRUE,
     created_at      TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ    NOT NULL DEFAULT NOW(),

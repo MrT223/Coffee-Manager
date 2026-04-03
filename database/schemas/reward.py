@@ -10,6 +10,9 @@ class RewardBase(BaseModel):
     points_required: int = Field(..., gt=0)
     reward_type_id: int
     discount_value: Optional[Decimal] = Field(None, ge=0)
+    quantity: Optional[int] = None
+    image_url: Optional[str] = None
+    is_active: Optional[bool] = True
 
 
 class RewardCreate(RewardBase):

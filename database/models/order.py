@@ -24,3 +24,4 @@ class Order(Base):
     status = relationship("OrderStatus", back_populates="orders")
     order_details = relationship("OrderDetail", back_populates="order", cascade="all, delete-orphan")
     point_logs = relationship("PointLog", back_populates="order")
+    user_rewards = relationship("UserReward", back_populates="order")

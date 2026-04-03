@@ -5,7 +5,7 @@ from database.schemas.product import ProductCreate, ProductUpdate
 
 def check_and_update_status(product: Product):
     """Logic tự động: quantity > 0 -> In stock (1), quantity == 0 -> Out of stock (2)"""
-    if product.quantity > 0:
+    if product.quantity is None or product.quantity > 0:
         product.status_id = 1
     else:
         product.status_id = 2

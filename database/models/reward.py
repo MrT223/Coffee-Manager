@@ -14,6 +14,8 @@ class Reward(Base):
     points_required = Column(Integer, nullable=False)
     reward_type_id = Column(Integer, ForeignKey("reward_types.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False)
     discount_value = Column(Numeric(12, 2), nullable=True)
+    image_url = Column(String(500), nullable=True)
+    quantity = Column(Integer, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -26,3 +28,4 @@ class Reward(Base):
     # Relationships
     reward_type = relationship("RewardType", back_populates="rewards")
     point_logs = relationship("PointLog", back_populates="reward")
+    user_rewards = relationship("UserReward", back_populates="reward")

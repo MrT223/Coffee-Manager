@@ -4,6 +4,7 @@ from database.models.user import User
 from database.models.reward import Reward
 from database.models.point_log import PointLog
 from database.models.loyalty_config import LoyaltyConfig
+from database.models.user_reward import UserReward
 from fastapi import HTTPException
 
 def get_active_config(db: Session):
@@ -45,8 +46,20 @@ def redeem_reward(db: Session, user_id: int, reward_id: int):
     if user.total_points < reward.points_required:
         raise HTTPException(status_code=400, detail="Bạn không đủ điểm để đổi quà này")
     
+    if reward.quantity is not None:
+        if reward.quantity <= 0:
+            raise HTTPException(status_code=400, detail="Quà tặng này đã hết")
+        reward.quantity -= 1
+    
     # Thực hiện trừ điểm
     user.total_points -= reward.points_required
+    
+    # Lưu vào kho quà của User
+    user_reward = UserReward(
+        user_id=user_id,
+        reward_id=reward_id
+    )
+    db.add(user_reward)
     
     # Ghi log đổi quà
     log = PointLog(

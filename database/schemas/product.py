@@ -7,7 +7,7 @@ from decimal import Decimal
 class ProductBase(BaseModel):
     name: str = Field(..., max_length=200)
     price: Decimal = Field(..., gt=0)
-    quantity: int = Field(0, ge=0) 
+    quantity: Optional[int] = Field(None, ge=0)  # None = không giới hạn
     category_id: int
     image_url: Optional[str] = None
     status_id: int = 1

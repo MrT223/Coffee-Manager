@@ -1,6 +1,6 @@
 // src/pages/Menu.jsx
 import React from "react";
-import { ShoppingCart, Loader2 } from "lucide-react";
+import { ShoppingCart, Loader2, Plus } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Menu({ products, categories, loading, selectedCategory, setSelectedCategory, onAddToCart }) {
@@ -11,76 +11,106 @@ export default function Menu({ products, categories, loading, selectedCategory, 
         return cat ? p.category_id === cat.id : false;
       });
 
+  const fmt = (n) => new Intl.NumberFormat('vi-VN').format(Math.round(n));
+
   return (
     <motion.section 
       initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm"
     >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-2xl font-extrabold text-zinc-900 tracking-tight">Thực đơn</h2>
-          <p className="text-zinc-400 text-xs font-medium mt-0.5">Khám phá các món mới nhất của CafeBell</p>
+          <h2 className="text-3xl font-black text-white tracking-tight">Thực đơn</h2>
+          <p className="text-white/30 text-sm font-medium mt-1">Khám phá các món đặc biệt của Cafe Sýbẩu 67</p>
         </div>
-        <div className="flex bg-zinc-100 p-1.5 rounded-xl gap-1 overflow-x-auto max-w-full">
-          {categories.map((cat) => (
-            <button 
-              key={cat.id} 
-              onClick={() => setSelectedCategory(cat.category_name)} 
-              className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all ${
-                selectedCategory === cat.category_name 
-                  ? "bg-white text-amber-600 shadow-sm" 
-                  : "text-zinc-400 hover:text-zinc-600"
-              }`}
-            >
-              {cat.category_name}
-            </button>
-          ))}
-        </div>
+      </div>
+
+      {/* Category tabs */}
+      <div className="flex bg-white/5 p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-fit mb-8 border border-white/5">
+        {categories.map((cat) => (
+          <button 
+            key={cat.id} 
+            onClick={() => setSelectedCategory(cat.category_name)} 
+            className={`px-5 py-2 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all ${
+              selectedCategory === cat.category_name 
+                ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" 
+                : "text-white/40 hover:text-white/70 hover:bg-white/5"
+            }`}
+          >
+            {cat.category_name}
+          </button>
+        ))}
       </div>
 
       {loading ? (
         <div className="py-20 flex flex-col items-center gap-3">
-          <Loader2 className="size-8 text-amber-500 animate-spin" />
-          <span className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Đang tải thực đơn...</span>
+          <Loader2 className="size-8 text-[#00704A] animate-spin" />
+          <span className="text-white/30 font-bold uppercase tracking-widest text-[10px]">Đang tải thực đơn...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           <AnimatePresence mode='popLayout'>
             {filteredProducts.map(p => (
               <motion.div 
                 layout
-                initial={{ opacity: 0, scale: 0.98 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 key={p.id} 
-                className="flex items-center gap-4 p-4 rounded-2xl border border-zinc-50 hover:border-amber-100 hover:bg-amber-50/40 transition-all group"
+                className="bg-[#1E3932] rounded-3xl border border-white/5 overflow-hidden hover:border-[#00704A]/40 transition-all group hover:shadow-xl hover:shadow-[#00704A]/10"
               >
-                 <div className="relative overflow-hidden rounded-xl shadow-sm flex-shrink-0">
-                    <img 
-                      src={p.image_url || "https://via.placeholder.com/150"} 
-                      className="size-20 object-cover group-hover:scale-105 transition-transform duration-500" 
-                    />
-                 </div>
-                 <div className="flex-grow">
-                    <h3 className="font-bold text-zinc-900 text-base tracking-tight">{p.name}</h3>
-                    <div className="text-amber-600 font-extrabold text-lg mt-0.5">
-                      {new Intl.NumberFormat('vi-VN').format(p.price)}
-                      <span className="text-[10px] ml-1 text-amber-700/40">VND</span>
+                {/* Image */}
+                <div className="relative overflow-hidden aspect-[4/3]">
+                  <img 
+                    src={p.image_url || "https://via.placeholder.com/300x225"} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                    alt={p.name}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1E3932] via-transparent to-transparent" />
+                  {p.quantity !== null && p.quantity <= 0 && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <span className="text-white/80 font-black text-xs uppercase tracking-widest bg-rose-600/80 px-4 py-1.5 rounded-full">Hết hàng</span>
                     </div>
-                 </div>
-                 {/* Nút thêm vào giỏ hàng */}
-                 <button 
-                  onClick={() => onAddToCart(p)}
-                  className="bg-zinc-900 text-white p-3 rounded-xl hover:bg-amber-600 transition-all shadow-md active:scale-90 flex-shrink-0"
-                 >
-                   <ShoppingCart className="size-5" />
-                 </button>
+                  )}
+                </div>
+
+                <div className="p-5 pt-3">
+                  <h3 className="font-bold text-white text-[15px] tracking-tight mb-1 line-clamp-1">{p.name}</h3>
+                  <div className="flex items-end justify-between mt-3 gap-2">
+                    <div className="min-w-0">
+                      <div className="text-[#00704A] font-black text-xl truncate">
+                        {fmt(p.price)}
+                        <span className="text-[10px] ml-1 text-white/20 font-medium">VND</span>
+                      </div>
+                      {p.quantity === null 
+                        ? <div className="text-[10px] text-emerald-400/50 font-medium mt-0.5">Luôn sẵn sàng</div>
+                        : p.quantity > 0 
+                          ? <div className="text-[10px] text-white/20 font-medium mt-0.5">Còn {p.quantity} phần</div>
+                          : null
+                      }
+                    </div>
+                    <button 
+                      onClick={() => onAddToCart(p)}
+                      disabled={p.quantity !== null && p.quantity <= 0}
+                      className={`p-3 rounded-2xl transition-all active:scale-90 flex-shrink-0 ${
+                        p.quantity === null || p.quantity > 0 
+                          ? "bg-[#00704A] text-white hover:bg-[#00804f] shadow-lg shadow-[#00704A]/30 hover:shadow-[#00704A]/50" 
+                          : "bg-white/5 text-white/20 cursor-not-allowed"
+                      }`}
+                    >
+                      <Plus className="size-5" />
+                    </button>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
       )}
+      
+      {/* Spacer để tránh overlap với minicart */}
+      <div className="h-32 w-full flex-shrink-0"></div>
     </motion.section>
   );
 }

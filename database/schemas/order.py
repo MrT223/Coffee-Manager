@@ -13,6 +13,7 @@ class OrderBase(BaseModel):
 
 class OrderCreate(OrderBase):
     items: List[OrderDetailCreate]
+    user_reward_id: Optional[int] = None
 
 
 class OrderRead(OrderBase):

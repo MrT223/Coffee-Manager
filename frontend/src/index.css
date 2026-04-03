@@ -1,5 +1,6 @@
 /* src/index.css */
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* Định nghĩa Palette màu sắc (Tailwind v4 mới dùng biến CSS) */
 @theme {
@@ -25,9 +26,31 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #F8F9FA;
+  background-color: #0d1f1b;
+  color: #ffffff;
+}
+
+/* Scrollbar dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Selection */
+::selection {
+  background-color: #00704A;
+  color: white;
 }
 
 input::placeholder {
-  color: #9ca3af; /* zinc-400 */
+  color: rgba(255, 255, 255, 0.25);
 }

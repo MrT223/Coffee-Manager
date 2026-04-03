@@ -27,8 +27,9 @@ PRODUCT_STATUSES = [
 ORDER_STATUSES = [
     {"status_name": "Chờ xác nhận",  "sort_order": 1, "description": "Đơn hàng mới, chờ nhân viên xác nhận"},
     {"status_name": "Đang chuẩn bị", "sort_order": 2, "description": "Nhân viên đang pha chế"},
-    {"status_name": "Đã hoàn thành", "sort_order": 3, "description": "Đơn hàng đã giao cho khách"},
-    {"status_name": "Đã hủy",        "sort_order": 4, "description": "Đơn hàng bị hủy"},
+    {"status_name": "Đang giao hàng", "sort_order": 3, "description": "Đơn hàng đang được giao cho khách"},
+    {"status_name": "Đã hoàn thành", "sort_order": 4, "description": "Đơn hàng đã giao cho khách"},
+    {"status_name": "Đã hủy",        "sort_order": 5, "description": "Đơn hàng bị hủy"},
 ]
 
 REWARD_TYPES = [

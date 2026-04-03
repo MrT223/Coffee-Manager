@@ -7,6 +7,7 @@ from database.schemas.order import OrderCreate
 from app.controllers import product as controller_product
 from fastapi import HTTPException
 from app.controllers import loyalty as controller_loyalty
+from database.models.user_reward import UserReward
 
 def create_order(db: Session, order_in: OrderCreate):
     # 1. Kiểm tra kho và tính tổng tiền thực tế từ DB
@@ -32,7 +33,32 @@ def create_order(db: Session, order_in: OrderCreate):
             "product_obj": product
         })
 
-    # 2. Tạo Order
+    # 2. Xử lý UserReward (Mã giảm giá/Quà tặng)
+    discounted_amount = 0
+    db_user_reward = None
+    
+    if order_in.user_reward_id:
+        if not order_in.user_id:
+            raise HTTPException(status_code=400, detail="Không thể sử dụng ưu đãi khi chưa đăng nhập")
+        
+        db_user_reward = db.query(UserReward).filter(
+            UserReward.id == order_in.user_reward_id,
+            UserReward.user_id == order_in.user_id,
+            UserReward.is_used == False
+        ).first()
+        
+        if not db_user_reward:
+            raise HTTPException(status_code=404, detail="Ưu đãi không hợp lệ hoặc đã qua sử dụng")
+            
+        reward = db_user_reward.reward
+        
+        # Nếu là Mã giảm giá (type=2)
+        if reward.reward_type_id == 2 and reward.discount_value:
+            discounted_amount = float(reward.discount_value)
+            total_price = max(total_price - discounted_amount, 0)
+        # Nếu là Sản phẩm tặng kèm (type=1) -> Không trừ giá tiền mà có thể đưa logic tặng quà vào OrderDetail, nhưng hệ thống hiện chỉ hỗ trợ giá tiền.
+
+    # 3. Tạo Order
     db_order = Order(
         user_id=order_in.user_id,
         total_price=total_price,
@@ -40,6 +66,13 @@ def create_order(db: Session, order_in: OrderCreate):
     )
     db.add(db_order)
     db.flush()
+    
+    # 3.5. Đánh dấu sử dụng ưu đãi
+    if db_user_reward:
+        db_user_reward.is_used = True
+        db_user_reward.order_id = db_order.id
+        from sqlalchemy.sql import func
+        db_user_reward.used_at = func.now()
 
     # 3. Tạo OrderDetails và TRỪ KHO CHÍNH THỨC
     for item_data in items_to_create:
@@ -58,11 +91,8 @@ def create_order(db: Session, order_in: OrderCreate):
 
     db.commit()
     db.refresh(db_order)
-
-    # 4. Tích điểm
-    if db_order.user_id:
-        controller_loyalty.add_points_from_order(db, user_id=db_order.user_id, order_id=db_order.id, total_price=db_order.total_price)
-        
+    
+    # Điểm sẽ được tích khi đơn hàng hoàn thành (update_order_status → status_id=4)
     return db_order
 
 
@@ -72,3 +102,23 @@ def get_orders(db: Session, skip: int = 0, limit: int = 100):
     Hàm lấy danh sách đơn hàng, sắp xếp theo thời gian mới nhất (hoặc ID giảm dần).
     """
     return db.query(Order).order_by(Order.id.desc()).offset(skip).limit(limit).all()
+
+def update_order_status(db: Session, order_id: int, status_id: int):
+    """Cập nhật trạng thái đơn hàng (UC-11)"""
+    db_order = db.query(Order).filter(Order.id == order_id).first()
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
+    
+    db_order.status_id = status_id
+    db.commit()
+    db.refresh(db_order)
+    
+    # Nếu đơn hàng hoàn thành (status_id=4) → tích điểm
+    if status_id == 4 and db_order.user_id:
+        controller_loyalty.add_points_from_order(
+            db, user_id=db_order.user_id,
+            order_id=db_order.id,
+            total_price=db_order.total_price
+        )
+    
+    return db_order

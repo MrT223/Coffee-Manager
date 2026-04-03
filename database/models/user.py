@@ -25,3 +25,4 @@ class User(Base):
     role = relationship("Role", back_populates="users")
     orders = relationship("Order", back_populates="user")
     point_logs = relationship("PointLog", back_populates="user")
+    user_rewards = relationship("UserReward", back_populates="user")

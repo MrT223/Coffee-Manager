@@ -11,7 +11,7 @@ class Product(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(200), nullable=False)
     price = Column(Numeric(12, 2), nullable=False)
-    quantity = Column(Integer, nullable=False, default=0) 
+    quantity = Column(Integer, nullable=True, default=None)  # None = không giới hạn
     category_id = Column(Integer, ForeignKey("categories.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False)
     image_url = Column(String(500), nullable=True)
     status_id = Column(Integer, ForeignKey("product_statuses.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False, default=1)

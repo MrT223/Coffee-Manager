@@ -16,6 +16,7 @@ from database.models.point_log import PointLog
 from database.models.loyalty_config import LoyaltyConfig
 from database.models.loyalty_config_history import LoyaltyConfigHistory
 from database.models.audit_log import AuditLog
+from database.models.user_reward import UserReward
 
 __all__ = [
     "Role",
@@ -33,4 +34,5 @@ __all__ = [
     "LoyaltyConfig",
     "LoyaltyConfigHistory",
     "AuditLog",
+    "UserReward",
 ]

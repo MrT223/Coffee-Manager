@@ -26,3 +26,27 @@ def create_user(db: Session, user: UserCreate):
     db.refresh(db_user) # Lấy lại dữ liệu mới nhất
     
     return db_user
+
+def get_users(db: Session, skip: int = 0, limit: int = 100):
+    """Lấy danh sách tất cả users (Admin)"""
+    return db.query(User).offset(skip).limit(limit).all()
+
+def update_user_role(db: Session, user_id: int, role_id: int):
+    """Cập nhật vai trò người dùng (Admin)"""
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        return None
+    db_user.role_id = role_id
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def toggle_user_active(db: Session, user_id: int):
+    """Kích hoạt / vô hiệu hóa tài khoản (Admin)"""
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        return None
+    db_user.is_active = not db_user.is_active
+    db.commit()
+    db.refresh(db_user)
+    return db_user

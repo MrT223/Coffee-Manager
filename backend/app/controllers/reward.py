@@ -13,14 +13,7 @@ def get_reward(db: Session, reward_id: int):
 
 def create_reward(db: Session, reward_in: RewardCreate):
     """Tạo phần thưởng mới (Admin)"""
-    db_reward = Reward(
-        name=reward_in.name,
-        description=reward_in.description,
-        points_required=reward_in.points_required,
-        reward_type_id=reward_in.reward_type_id,
-        discount_value=reward_in.discount_value,
-        is_active=True
-    )
+    db_reward = Reward(**reward_in.model_dump(exclude_unset=True))
     db.add(db_reward)
     db.commit()
     db.refresh(db_reward)
@@ -32,7 +25,7 @@ def update_reward(db: Session, reward_id: int, reward_in: RewardCreate):
     if not db_reward:
         return None
     
-    for field, value in reward_in.model_dump().items():
+    for field, value in reward_in.model_dump(exclude_unset=True).items():
         setattr(db_reward, field, value)
     
     db.commit()
