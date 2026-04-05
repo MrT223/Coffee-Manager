@@ -202,7 +202,7 @@ export default function RewardsManagement() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {rewards.map(r => (
-                  <tr key={r.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={r.id} className={`transition-colors ${!r.is_active ? 'opacity-40 grayscale hover:opacity-60' : 'hover:bg-white/5'}`}>
                     <td className="py-4 px-6 text-xs text-white/50 font-bold">#{r.id}</td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
