@@ -14,7 +14,7 @@ const API = "http://127.0.0.1:8000/api";
 const EMPTY_PRODUCT = { name: "", price: "", quantity: null, category_id: "", image_url: "" };
 const EMPTY_CATEGORY = { category_name: "" };
 
-export default function ProductsManagement() {
+export default function ProductsManagement({ currentUser }) {
   const [activeTab, setActiveTab] = useState("products");
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -160,9 +160,11 @@ export default function ProductsManagement() {
         <button onClick={() => setActiveTab("products")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "products" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
           <Coffee className="size-3.5" />Sản phẩm ({products.length})
         </button>
-        <button onClick={() => setActiveTab("categories")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "categories" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
-          <FolderOpen className="size-3.5" />Danh mục ({categories.length})
-        </button>
+        {currentUser?.role_id === 3 && (
+          <button onClick={() => setActiveTab("categories")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "categories" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
+            <FolderOpen className="size-3.5" />Danh mục ({categories.length})
+          </button>
+        )}
       </div>
 
       {/* TAB SẢN PHẨM */}

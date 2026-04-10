@@ -223,7 +223,7 @@ function MainLayout() {
             <Route path="/checkout" element={<Checkout cart={cart} cartTotal={cartTotal} onCompleteOrder={() => setCart([])} currentUser={currentUser} />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/orders" element={<OrdersManagement />} />
-            <Route path="/products" element={<ProductsManagement />} />
+            <Route path="/products" element={<ProductsManagement currentUser={currentUser} />} />
             <Route path="/loyalty" element={<Loyalty currentUser={currentUser} />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/admin/rewards" element={<RewardsManagement />} />
