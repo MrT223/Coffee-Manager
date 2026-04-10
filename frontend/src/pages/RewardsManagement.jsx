@@ -127,14 +127,25 @@ export default function RewardsManagement() {
   };
 
   const deleteReward = async (id) => { 
-    if (!confirm("Xác nhận xóa quà tặng định danh này?")) return; 
-    try { 
-      await axios.delete(`${API}/rewards/${id}`); 
-      toast.success("Đã xóa quà tặng"); 
-      await fetchData(); 
-    } catch (err) { 
-      toast.error(err.response?.data?.detail || "Lỗi xóa quà tặng"); 
-    } 
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-bold text-white">Xác nhận xóa quà tặng định danh này?</p>
+        <div className="flex justify-end gap-2">
+          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 text-xs font-bold text-white/50 hover:text-white transition-colors">Hủy</button>
+          <button 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try { 
+                await axios.delete(`${API}/rewards/${id}`); 
+                toast.success("Đã xóa quà tặng"); 
+                await fetchData(); 
+              } catch (err) { toast.error(err.response?.data?.detail || "Lỗi xóa quà tặng"); }
+            }} 
+            className="px-3 py-1.5 bg-rose-500 rounded-lg text-xs font-bold text-white hover:bg-rose-600 transition-colors"
+          >Xóa</button>
+        </div>
+      </div>
+    ), { id: 'confirm-toast', duration: Infinity, style: { background: '#1E3932', border: '1px solid rgba(255,255,255,0.1)' } });
   };
 
   const toggleRewardActive = async (r) => {

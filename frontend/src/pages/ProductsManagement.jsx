@@ -80,7 +80,24 @@ export default function ProductsManagement() {
     } catch (err) { toast.error(err.response?.data?.detail || "Lỗi lưu sản phẩm"); } finally { setSaving(false); }
   };
 
-  const deleteProduct = async (id) => { if (!confirm("Xác nhận xóa sản phẩm này?")) return; try { await axios.delete(`${API}/products/${id}`); toast.success("Đã xóa sản phẩm"); await fetchData(); } catch (err) { toast.error(err.response?.data?.detail || "Lỗi xóa"); } };
+  const deleteProduct = async (id) => {
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-bold text-white">Xác nhận xóa sản phẩm này?</p>
+        <div className="flex justify-end gap-2">
+          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 text-xs font-bold text-white/50 hover:text-white transition-colors">Hủy</button>
+          <button 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try { await axios.delete(`${API}/products/${id}`); toast.success("Đã xóa sản phẩm"); await fetchData(); } 
+              catch (err) { toast.error(err.response?.data?.detail || "Lỗi xóa"); }
+            }} 
+            className="px-3 py-1.5 bg-rose-500 rounded-lg text-xs font-bold text-white hover:bg-rose-600 transition-colors"
+          >Xóa</button>
+        </div>
+      </div>
+    ), { id: 'confirm-toast', duration: Infinity, style: { background: '#1E3932', border: '1px solid rgba(255,255,255,0.1)' } });
+  };
 
   const openCreateCategory = () => { setEditingCategory(null); setCategoryForm(EMPTY_CATEGORY); setShowCategoryForm(true); };
   const openEditCategory = (c) => { setEditingCategory(c); setCategoryForm({ category_name: c.category_name }); setShowCategoryForm(true); };
@@ -96,7 +113,24 @@ export default function ProductsManagement() {
     } catch (err) { toast.error(err.response?.data?.detail || "Lỗi lưu danh mục"); } finally { setSaving(false); }
   };
 
-  const deleteCategory = async (id) => { if (!confirm("Xác nhận xóa danh mục?")) return; try { await axios.delete(`${API}/categories/${id}`); toast.success("Đã xóa danh mục"); await fetchData(); } catch (err) { toast.error(err.response?.data?.detail || "Lỗi xóa danh mục"); } };
+  const deleteCategory = async (id) => {
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-bold text-white">Xác nhận xóa danh mục này?</p>
+        <div className="flex justify-end gap-2">
+          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 text-xs font-bold text-white/50 hover:text-white transition-colors">Hủy</button>
+          <button 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try { await axios.delete(`${API}/categories/${id}`); toast.success("Đã xóa danh mục"); await fetchData(); } 
+              catch (err) { toast.error(err.response?.data?.detail || "Lỗi xóa danh mục"); }
+            }} 
+            className="px-3 py-1.5 bg-rose-500 rounded-lg text-xs font-bold text-white hover:bg-rose-600 transition-colors"
+          >Xóa</button>
+        </div>
+      </div>
+    ), { id: 'confirm-toast', duration: Infinity, style: { background: '#1E3932', border: '1px solid rgba(255,255,255,0.1)' } });
+  };
 
   const getCategoryName = (id) => categories.find(c => c.id === id)?.category_name || "—";
 

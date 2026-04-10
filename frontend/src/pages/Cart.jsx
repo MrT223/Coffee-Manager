@@ -69,22 +69,37 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
 
   const [cancelling, setCancelling] = useState(null);
   const handleCancelOrder = async (orderId) => {
-    if (!confirm("Bạn có chắc muốn hủy đơn hàng này?")) return;
-    try {
-      setCancelling(orderId);
-      await axios.put(`http://127.0.0.1:8000/api/orders/${orderId}/status`, { status_id: 5 });
-      const res = await axios.get("http://127.0.0.1:8000/api/orders/");
-      const userOrders = res.data.filter(order =>
-        order.user_id !== null && Number(order.user_id) === Number(currentUser.id)
-      );
-      setOrders(userOrders);
-      setSelectedOrder(null);
-      toast.success("Đã hủy đơn hàng thành công");
-    } catch (err) {
-      toast.error(err.response?.data?.detail || "Lỗi hủy đơn hàng");
-    } finally {
-      setCancelling(null);
-    }
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-bold text-white">Bạn có chắc muốn hủy đơn hàng này?</p>
+        <div className="flex justify-end gap-2">
+          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 text-xs font-bold text-white/50 hover:text-white transition-colors">Hủy</button>
+          <button 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                setCancelling(orderId);
+                await axios.put(`http://127.0.0.1:8000/api/orders/${orderId}/status`, { status_id: 5 });
+                const res = await axios.get("http://127.0.0.1:8000/api/orders/");
+                const userOrders = res.data.filter(order =>
+                  order.user_id !== null && Number(order.user_id) === Number(currentUser.id)
+                );
+                setOrders(userOrders);
+                setSelectedOrder(null);
+                toast.success("Đã hủy đơn hàng thành công");
+              } catch (err) {
+                toast.error(err.response?.data?.detail || "Lỗi hủy đơn hàng");
+              } finally {
+                setCancelling(null);
+              }
+            }} 
+            className="px-3 py-1.5 bg-rose-500 rounded-lg text-xs font-bold text-white hover:bg-rose-600 transition-colors"
+          >
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    ), { id: 'confirm-toast', duration: Infinity, style: { background: '#1E3932', border: '1px solid rgba(255,255,255,0.1)' } });
   };
 
   const renderOrderCard = (order) => {
