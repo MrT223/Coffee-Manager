@@ -82,17 +82,17 @@ function MainLayout() {
   const handleClearCartAndReleaseStock = () => {
     setProducts(prev => prev.map(p => {
       const cartItem = cart.find(item => item.id === p.id);
-      return cartItem ? { ...p, quantity: p.quantity + cartItem.qty } : p;
+      return cartItem ? { ...p, quantity: p.quantity !== null ? p.quantity + cartItem.qty : null } : p;
     }));
     setCart([]);
   };
 
   const addToCart = (product) => {
-    if (product.quantity <= 0) {
+    if (product.quantity !== null && product.quantity <= 0) {
       toast.error("Sản phẩm đã hết hàng trong kho!");
       return;
     }
-    setProducts(prev => prev.map(p => p.id === product.id ? { ...p, quantity: p.quantity - 1 } : p));
+    setProducts(prev => prev.map(p => p.id === product.id ? { ...p, quantity: p.quantity !== null ? p.quantity - 1 : null } : p));
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) return prev.map(item => item.id === product.id ? {...item, qty: item.qty + 1} : item);
@@ -102,18 +102,18 @@ function MainLayout() {
 
   const updateQty = (id, delta) => {
     const productInStock = products.find(p => p.id === id);
-    if (delta > 0 && (!productInStock || productInStock.quantity <= 0)) {
+    if (delta > 0 && (!productInStock || (productInStock.quantity !== null && productInStock.quantity <= 0))) {
       toast.error("Không đủ hàng trong kho!");
       return;
     }
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, quantity: p.quantity - delta } : p));
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, quantity: p.quantity !== null ? p.quantity - delta : null } : p));
     setCart(prev => prev.map(item => item.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item));
   };
 
   const removeFromCart = (id) => {
     const cartItem = cart.find(item => item.id === id);
     if (cartItem) {
-      setProducts(prev => prev.map(p => p.id === id ? { ...p, quantity: p.quantity + cartItem.qty } : p));
+      setProducts(prev => prev.map(p => p.id === id ? { ...p, quantity: p.quantity !== null ? p.quantity + cartItem.qty : null } : p));
     }
     setCart(prev => prev.filter(item => item.id !== id));
   };

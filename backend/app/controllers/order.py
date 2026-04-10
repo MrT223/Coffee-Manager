@@ -20,7 +20,7 @@ def create_order(db: Session, order_in: OrderCreate):
             raise HTTPException(status_code=404, detail=f"Sản phẩm ID {item.product_id} không tồn tại")
         
         # Kiểm tra tồn kho (đã bao gồm việc kiểm tra quantity >= item.quantity)
-        if product.quantity < item.quantity:
+        if product.quantity is not None and product.quantity < item.quantity:
             raise HTTPException(status_code=400, detail=f"Sản phẩm {product.name} đã hết hàng hoặc không đủ số lượng")
         
         item_total = product.price * item.quantity
@@ -54,8 +54,9 @@ def create_order(db: Session, order_in: OrderCreate):
         
         # Nếu là Mã giảm giá (type=2)
         if reward.reward_type_id == 2 and reward.discount_value:
-            discounted_amount = float(reward.discount_value)
-            total_price = max(total_price - discounted_amount, 0)
+            from decimal import Decimal
+            discounted_amount = Decimal(str(reward.discount_value))
+            total_price = max(total_price - discounted_amount, Decimal('0'))
         # Nếu là Sản phẩm tặng kèm (type=1) -> Không trừ giá tiền mà có thể đưa logic tặng quà vào OrderDetail, nhưng hệ thống hiện chỉ hỗ trợ giá tiền.
 
     # 3. Tạo Order
@@ -86,7 +87,8 @@ def create_order(db: Session, order_in: OrderCreate):
         
         # Cập nhật số lượng sản phẩm trong kho
         product = item_data["product_obj"]
-        product.quantity -= item_data["quantity"]
+        if product.quantity is not None:
+            product.quantity -= item_data["quantity"]
         controller_product.check_and_update_status(product)
 
     db.commit()
