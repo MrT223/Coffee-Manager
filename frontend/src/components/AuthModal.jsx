@@ -39,13 +39,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       // Lấy dữ liệu user từ Backend trả về (sẽ được cấu hình ở bước 2 bên dưới)
       let userData = res.data.user || res.data; 
 
-      // KIỂM TRA NGHIÊM NGẶT: Bắt buộc phải có ID thực tế từ Database mới cho đăng nhập
-      if (!userData.id) {
-        throw new Error("Hệ thống Backend chưa trả về ID người dùng. Vui lòng cập nhật API!");
-      }
-
       // Lưu trữ an toàn ID thật
       localStorage.setItem("user", JSON.stringify(userData));
+      if (res.data.access_token) {
+        localStorage.setItem("access_token", res.data.access_token);
+      }
       
       onLoginSuccess(userData); 
       onClose();

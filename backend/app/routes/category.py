@@ -6,6 +6,8 @@ from typing import List
 from database.connection import get_db
 from database.schemas.category import CategoryCreate, CategoryRead
 from app.controllers import category as controller_category
+from app.dependencies import get_current_admin
+from database.models.user import User
 
 router = APIRouter()
 
@@ -15,12 +17,12 @@ def read_categories(db: Session = Depends(get_db)):
     return controller_category.get_categories(db)
 
 @router.post("/", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
-def create_new_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
+def create_new_category(category_in: CategoryCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
     """API Tạo danh mục mới (Chỉ Admin/Staff nên làm việc này)"""
     return controller_category.create_category(db, category_in)
 
 @router.put("/{category_id}", response_model=CategoryRead)
-def update_existing_category(category_id: int, category_in: CategoryCreate, db: Session = Depends(get_db)):
+def update_existing_category(category_id: int, category_in: CategoryCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
     """API Cập nhật danh mục"""
     db_category = controller_category.update_category(db, category_id, category_in)
     if not db_category:
@@ -28,7 +30,7 @@ def update_existing_category(category_id: int, category_in: CategoryCreate, db: 
     return db_category
 
 @router.delete("/{category_id}")
-def delete_existing_category(category_id: int, db: Session = Depends(get_db)):
+def delete_existing_category(category_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
     """API Xóa danh mục"""
     success = controller_category.delete_category(db, category_id)
     if not success:

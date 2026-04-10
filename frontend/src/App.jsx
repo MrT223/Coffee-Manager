@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { useState, useEffect, Fragment } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { 
   LayoutDashboard, ShoppingCart, CupSoda, Sandwich, Settings, 
@@ -22,6 +22,15 @@ import Loyalty from "./pages/Loyalty";
 import AdminPanel from "./pages/AdminPanel";
 import RewardsManagement from "./pages/RewardsManagement";
 
+// Cấu hình Axios Interceptor để tự động gắn Token
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 const SidebarLink = ({ icon: Icon, label, path, active, onClick, visible = true }) => {
   if (!visible) return null;
   return (
@@ -30,6 +39,14 @@ const SidebarLink = ({ icon: Icon, label, path, active, onClick, visible = true 
       {label}
     </button>
   );
+};
+
+// Route guard: chỉ cho phép truy cập nếu user có role phù hợp
+const ProtectedRoute = ({ currentUser, allowedRoles, children }) => {
+  if (!currentUser || !allowedRoles.includes(currentUser.role_id)) {
+    return <Navigate to="/menu" replace />;
+  }
+  return children;
 };
 
 function MainLayout() {
@@ -108,13 +125,19 @@ function MainLayout() {
   };
 
   const updateQty = (id, delta) => {
+    const cartItem = cart.find(item => item.id === id);
+    if (!cartItem) return;
+
+    // Chặn giảm khi đã ở mức tối thiểu (qty=1)
+    if (delta < 0 && cartItem.qty <= 1) return;
+
     const productInStock = products.find(p => p.id === id);
     if (delta > 0 && (!productInStock || (productInStock.quantity !== null && productInStock.quantity <= 0))) {
       toast.error("Không đủ hàng trong kho!");
       return;
     }
     setProducts(prev => prev.map(p => p.id === id ? { ...p, quantity: p.quantity !== null ? p.quantity - delta : null } : p));
-    setCart(prev => prev.map(item => item.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item));
+    setCart(prev => prev.map(item => item.id === id ? { ...item, qty: item.qty + delta } : item));
   };
 
   const removeFromCart = (id) => {
@@ -128,6 +151,7 @@ function MainLayout() {
   const handleLogout = () => {
     handleClearCartAndReleaseStock();
     localStorage.removeItem("user");
+    localStorage.removeItem("access_token");
     setCurrentUser(null);
     navigate("/menu");
   };
@@ -230,14 +254,14 @@ function MainLayout() {
           <Routes>
             <Route path="/" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} />} />
             <Route path="/menu" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} />} />
-            <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} cartTotal={cartTotal} updateQty={updateQty} currentUser={currentUser} onRequireAuth={requireCustomerAuth} />} />
-            <Route path="/checkout" element={<Checkout cart={cart} cartTotal={cartTotal} onCompleteOrder={() => setCart([])} currentUser={currentUser} />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/orders" element={<OrdersManagement />} />
-            <Route path="/products" element={<ProductsManagement currentUser={currentUser} />} />
-            <Route path="/loyalty" element={<Loyalty currentUser={currentUser} />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/admin/rewards" element={<RewardsManagement />} />
+            <Route path="/cart" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1, 2]}><Cart cart={cart} removeFromCart={removeFromCart} cartTotal={cartTotal} updateQty={updateQty} currentUser={currentUser} onRequireAuth={requireCustomerAuth} /></ProtectedRoute>} />
+            <Route path="/checkout" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1, 2]}><Checkout cart={cart} cartTotal={cartTotal} onCompleteOrder={() => setCart([])} currentUser={currentUser} /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><Dashboard /></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[2]}><OrdersManagement /></ProtectedRoute>} />
+            <Route path="/products" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[2, 3]}><ProductsManagement currentUser={currentUser} /></ProtectedRoute>} />
+            <Route path="/loyalty" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1]}><Loyalty currentUser={currentUser} /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><AdminPanel /></ProtectedRoute>} />
+            <Route path="/admin/rewards" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><RewardsManagement /></ProtectedRoute>} />
           </Routes>
         </main>
 

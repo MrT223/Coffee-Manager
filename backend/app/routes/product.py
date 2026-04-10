@@ -11,6 +11,8 @@ from database.connection import get_db
 from database.schemas.product import ProductCreate, ProductUpdate, ProductRead
 from app.controllers import product as controller_product
 from app.controllers import category as controller_category
+from app.dependencies import get_current_staff
+from database.models.user import User
 
 router = APIRouter()
 
@@ -24,7 +26,7 @@ def read_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
     return controller_product.get_products(db, skip=skip, limit=limit)
 
 @router.post("/", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
-def create_new_product(product_in: ProductCreate, db: Session = Depends(get_db)):
+def create_new_product(product_in: ProductCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_staff)):
     category = controller_category.get_category(db, product_in.category_id)
     if not category:
         raise HTTPException(status_code=400, detail="Danh mục không tồn tại")
@@ -32,7 +34,7 @@ def create_new_product(product_in: ProductCreate, db: Session = Depends(get_db))
 
 # === UPLOAD ẢNH ===
 @router.post("/upload-image")
-async def upload_product_image(file: UploadFile = File(...)):
+async def upload_product_image(file: UploadFile = File(...), current_user: User = Depends(get_current_staff)):
     """Upload ảnh sản phẩm, trả về URL"""
     # Kiểm tra loại file
     allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
@@ -73,7 +75,7 @@ def read_product_detail(product_id: int, db: Session = Depends(get_db)):
     return db_product
 
 @router.put("/{product_id}", response_model=ProductRead)
-def update_existing_product(product_id: int, product_in: ProductUpdate, db: Session = Depends(get_db)):
+def update_existing_product(product_id: int, product_in: ProductUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_staff)):
     """API Cập nhật sản phẩm"""
     db_product = controller_product.update_product(db, product_id, product_in)
     if not db_product:
@@ -81,7 +83,7 @@ def update_existing_product(product_id: int, product_in: ProductUpdate, db: Sess
     return db_product
 
 @router.delete("/{product_id}")
-def delete_existing_product(product_id: int, db: Session = Depends(get_db)):
+def delete_existing_product(product_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_staff)):
     """API Xóa sản phẩm"""
     success = controller_product.delete_product(db, product_id)
     if not success:

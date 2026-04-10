@@ -71,7 +71,7 @@ export default function AdminPanel() {
       {/* TAB USERS */}
       {activeTab === "users" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="bg-[#00704A] rounded-3xl border border-white/10 overflow-hidden">
+          <div className="bg-[#00704A] rounded-3xl border border-white/10 overflow-visible">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/10">

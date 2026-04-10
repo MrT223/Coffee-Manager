@@ -123,7 +123,18 @@ def update_order_status(db: Session, order_id: int, status_id: int):
     if not db_order:
         raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
     
+    old_status = db_order.status_id
     db_order.status_id = status_id
+    
+    # Nếu đơn hàng bị HỦY (status_id=5) và trước đó chưa bị hủy → HOÀN KHO
+    if status_id == 5 and old_status != 5:
+        for detail in db_order.order_details:
+            product = db.query(Product).filter(Product.id == detail.product_id).first()
+            if product and product.quantity is not None:
+                product.quantity += detail.quantity
+            if product:
+                controller_product.check_and_update_status(product)
+    
     db.commit()
     db.refresh(db_order)
     
