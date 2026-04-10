@@ -8,10 +8,18 @@ from app.controllers import product as controller_product
 from fastapi import HTTPException
 from app.controllers import loyalty as controller_loyalty
 from database.models.user_reward import UserReward
+from database.models.user import User
+from decimal import Decimal
 
 def create_order(db: Session, order_in: OrderCreate):
     # 1. Kiểm tra kho và tính tổng tiền thực tế từ DB
-    total_price = 0
+    is_staff = False
+    if order_in.user_id:
+        user = db.query(User).filter(User.id == order_in.user_id).first()
+        if user and user.role_id == 2:
+            is_staff = True
+
+    total_price = Decimal('0')
     items_to_create = []
     
     for item in order_in.items:
@@ -23,13 +31,18 @@ def create_order(db: Session, order_in: OrderCreate):
         if product.quantity is not None and product.quantity < item.quantity:
             raise HTTPException(status_code=400, detail=f"Sản phẩm {product.name} đã hết hàng hoặc không đủ số lượng")
         
-        item_total = product.price * item.quantity
+        
+        calc_price = product.price
+        if is_staff:
+            calc_price = product.price * Decimal('0.8')
+
+        item_total = calc_price * item.quantity
         total_price += item_total
         
         items_to_create.append({
             "product_id": product.id,
             "quantity": item.quantity,
-            "price_at_time": product.price,
+            "price_at_time": calc_price,
             "product_obj": product
         })
 
@@ -54,7 +67,6 @@ def create_order(db: Session, order_in: OrderCreate):
         
         # Nếu là Mã giảm giá (type=2)
         if reward.reward_type_id == 2 and reward.discount_value:
-            from decimal import Decimal
             discounted_amount = Decimal(str(reward.discount_value))
             total_price = max(total_price - discounted_amount, Decimal('0'))
         # Nếu là Sản phẩm tặng kèm (type=1) -> Không trừ giá tiền mà có thể đưa logic tặng quà vào OrderDetail, nhưng hệ thống hiện chỉ hỗ trợ giá tiền.

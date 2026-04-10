@@ -52,6 +52,9 @@ function MainLayout() {
   });
 
   const [cart, setCart] = useState([]);
+  const cartRef = React.useRef(cart);
+  useEffect(() => { cartRef.current = cart; }, [cart]);
+
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
@@ -62,12 +65,16 @@ function MainLayout() {
           axios.get("http://127.0.0.1:8000/api/products/"),
           axios.get("http://127.0.0.1:8000/api/categories/")
         ]);
-        setProducts(prodRes.data || []);
+        const freshProducts = prodRes.data || [];
+        setProducts(freshProducts.map(p => {
+          const cartItem = cartRef.current.find(item => item.id === p.id);
+          return cartItem && p.quantity !== null ? { ...p, quantity: p.quantity - cartItem.qty } : p;
+        }));
         setCategories([{ id: 0, category_name: "All" }, ...(catRes.data || [])]);
       } catch (error) { console.error("Lỗi API:", error); } finally { setLoading(false); }
     };
     fetchData();
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (cart.length > 0) {
@@ -125,7 +132,11 @@ function MainLayout() {
     navigate("/menu");
   };
 
-  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const cartTotal = cart.reduce((sum, item) => {
+    let price = item.price;
+    if (currentUser?.role_id === 2) price = price * 0.8;
+    return sum + (price * item.qty);
+  }, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
 
   const requireCustomerAuth = () => {
@@ -133,8 +144,8 @@ function MainLayout() {
       setIsAuthModalOpen(true);
       return false;
     }
-    if (currentUser.role_id !== 1) {
-      toast.error("Chỉ tài khoản Khách hàng (Customer) mới có quyền đặt hàng!");
+    if (currentUser.role_id !== 1 && currentUser.role_id !== 2) {
+      toast.error("Tài khoản của bạn không có quyền đặt hàng!");
       return false;
     }
     return true;
@@ -201,7 +212,7 @@ function MainLayout() {
           </div>
 
           <div className="flex items-center gap-4">
-            {(currentUser?.role_id === 1) && (
+            {(currentUser?.role_id === 1 || currentUser?.role_id === 2) && (
               <button onClick={() => navigate("/cart")} className="relative p-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-[#00704A]/20 hover:border-[#00704A]/30 transition-all">
                 <ShoppingCart className="size-5" />
                 {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 bg-[#00704A] text-white size-5 rounded-full flex items-center justify-center text-[9px] font-black border-2 border-[#1E3932]">{cartCount}</span>}
@@ -217,8 +228,8 @@ function MainLayout() {
         {/* Main content area */}
         <main className={`flex-1 p-6 lg:p-8 ${cart.length > 0 && (location.pathname === "/" || location.pathname.includes("/menu")) ? 'pb-40' : 'pb-6'}`}>
           <Routes>
-            <Route path="/" element={<Menu products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} />} />
-            <Route path="/menu" element={<Menu products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} />} />
+            <Route path="/" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} />} />
+            <Route path="/menu" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} />} />
             <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} cartTotal={cartTotal} updateQty={updateQty} currentUser={currentUser} onRequireAuth={requireCustomerAuth} />} />
             <Route path="/checkout" element={<Checkout cart={cart} cartTotal={cartTotal} onCompleteOrder={() => setCart([])} currentUser={currentUser} />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -269,7 +280,9 @@ function MainLayout() {
                       <img src={item.image_url || "https://via.placeholder.com/150"} className="size-14 rounded-xl object-cover" />
                       <div className="flex-grow">
                         <div className="text-sm font-bold text-white">{item.name}</div>
-                        <div className="text-[#00704A] font-black text-xs">{new Intl.NumberFormat('vi-VN').format(item.price)} đ</div>
+                        <div className="text-[#00704A] font-black text-xs">
+                          {new Intl.NumberFormat('vi-VN').format(currentUser?.role_id === 2 ? item.price * 0.8 : item.price)} đ
+                        </div>
                         <div className="flex items-center gap-2 mt-1.5">
                           <button onClick={() => updateQty(item.id, -1)} className="size-6 flex items-center justify-center rounded-lg bg-white/10 text-white/60 hover:bg-white/20 text-xs font-bold transition-colors"><Minus className="size-3" /></button>
                           <span className="text-xs font-black w-5 text-center text-white">{item.qty}</span>

@@ -33,8 +33,8 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
       toast.error("Lỗi: Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
       return;
     }
-    if (currentUser.role_id !== 1) {
-      toast.error("Chỉ tài khoản Khách hàng (Customer) mới có quyền đặt hàng!");
+    if (currentUser.role_id !== 1 && currentUser.role_id !== 2) {
+      toast.error("Tài khoản của bạn không có quyền đặt hàng!");
       return;
     }
     
@@ -131,7 +131,12 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
         <div className="space-y-4 mb-10 bg-white/5 p-6 rounded-3xl border border-white/10">
           <div className="flex justify-between text-xs font-bold gap-4">
             <span className="text-white/40 uppercase tracking-wider flex-shrink-0">Tạm tính:</span>
-            <span className="text-white min-w-0 truncate text-right">{new Intl.NumberFormat('vi-VN').format(cartTotal)} đ</span>
+            <span className="text-white min-w-0 text-right">
+              {new Intl.NumberFormat('vi-VN').format(cartTotal)} đ
+              {currentUser?.role_id === 2 && (
+                 <span className="block text-[9px] text-emerald-400/80 uppercase mt-1">Đã áp dụng giảm 20% NV</span>
+              )}
+            </span>
           </div>
           <div className="flex justify-between text-xs font-bold gap-4">
             <span className="text-white/40 uppercase tracking-wider flex-shrink-0">Phí dịch vụ:</span>

@@ -213,7 +213,14 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
                     <img src={item.image_url || "https://via.placeholder.com/150"} className="size-16 rounded-2xl object-cover" />
                     <div className="flex-grow min-w-0">
                       <h3 className="text-sm font-bold text-white truncate">{item.name}</h3>
-                      <p className="text-amber-300 font-black text-xs mt-0.5 truncate" title={new Intl.NumberFormat('vi-VN').format(item.price) + " đ"}>{fmtShort(item.price)} đ</p>
+                      {currentUser?.role_id === 2 ? (
+                        <div className="mt-0.5">
+                          <span className="text-white/40 line-through text-[10px] font-semibold mr-2">{fmt(item.price)} đ</span>
+                          <span className="text-emerald-400 font-black text-xs truncate" title={fmt(item.price * 0.8) + " đ"}>{fmtShort(item.price * 0.8)} đ</span>
+                        </div>
+                      ) : (
+                        <p className="text-amber-300 font-black text-xs mt-0.5 truncate" title={fmt(item.price) + " đ"}>{fmtShort(item.price)} đ</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
                       <button onClick={() => updateQty(item.id, -1)} className="text-white/40 hover:text-white font-bold px-1"><Minus className="size-3" /></button>

@@ -3,7 +3,7 @@ import React from "react";
 import { ShoppingCart, Loader2, Plus } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Menu({ products, categories, loading, selectedCategory, setSelectedCategory, onAddToCart }) {
+export default function Menu({ currentUser, products, categories, loading, selectedCategory, setSelectedCategory, onAddToCart }) {
   const filteredProducts = selectedCategory === "All" 
     ? products 
     : products.filter(p => {
@@ -82,10 +82,20 @@ export default function Menu({ products, categories, loading, selectedCategory, 
                   <h3 className="font-bold text-white text-[15px] tracking-tight mb-1 line-clamp-1">{p.name}</h3>
                   <div className="flex items-end justify-between mt-3 gap-2">
                     <div className="min-w-0">
-                      <div className="text-[#00704A] font-black text-xl truncate">
-                        {fmt(p.price)}
-                        <span className="text-[10px] ml-1 text-white/20 font-medium">VND</span>
-                      </div>
+                      {currentUser?.role_id === 2 ? (
+                        <div className="flex flex-col">
+                          <span className="text-white/40 line-through text-xs font-semibold">{fmt(p.price)} đ</span>
+                          <div className="text-emerald-400 font-black text-xl truncate">
+                            {fmt(p.price * 0.8)}
+                            <span className="text-[10px] ml-1 text-emerald-400/50 font-medium">VND</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-[#00704A] font-black text-xl truncate">
+                          {fmt(p.price)}
+                          <span className="text-[10px] ml-1 text-white/20 font-medium">VND</span>
+                        </div>
+                      )}
                       {p.quantity === null 
                         ? <div className="text-[10px] text-emerald-400/50 font-medium mt-0.5">Luôn sẵn sàng</div>
                         : p.quantity > 0 
