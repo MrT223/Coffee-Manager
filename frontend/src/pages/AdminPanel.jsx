@@ -6,6 +6,7 @@ import {
 import { motion } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import CustomSelect from "../components/CustomSelect";
 
 const API = "http://127.0.0.1:8000/api";
 
@@ -102,16 +103,16 @@ export default function AdminPanel() {
                         <span className="text-xs font-black text-amber-300">{user.total_points}</span>
                       </td>
                       <td className="py-4 px-4 text-center">
-                        <select
+                        <CustomSelect
                           value={user.role_id}
-                          onChange={e => updateRole(user.id, parseInt(e.target.value))}
-                          disabled={updating === user.id}
-                          className={`text-[10px] font-black px-3 py-1.5 rounded-xl border-0 cursor-pointer ${role.cls} outline-none`}
-                        >
-                          <option value={1} className="bg-[#1E3932] text-white">Customer</option>
-                          <option value={2} className="bg-[#1E3932] text-white">Staff</option>
-                          <option value={3} className="bg-[#1E3932] text-white">Admin</option>
-                        </select>
+                          onChange={val => updateRole(user.id, parseInt(val))}
+                          className="min-w-[105px]"
+                          options={[
+                            { value: 1, label: "Customer" },
+                            { value: 2, label: "Staff" },
+                            { value: 3, label: "Admin" }
+                          ]}
+                        />
                       </td>
                       <td className="py-4 px-4 text-center">
                         <span className={`text-[9px] font-black px-3 py-1 rounded-full ${user.is_active ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}>

@@ -49,14 +49,17 @@ export default function Menu({ products, categories, loading, selectedCategory, 
           <span className="text-white/30 font-bold uppercase tracking-widest text-[10px]">Đang tải thực đơn...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          <AnimatePresence mode='popLayout'>
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={selectedCategory}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+          >
             {filteredProducts.map(p => (
-              <motion.div 
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
+              <div 
                 key={p.id} 
                 className="bg-[#1E3932] rounded-3xl border border-white/5 overflow-hidden hover:border-[#00704A]/40 transition-all group hover:shadow-xl hover:shadow-[#00704A]/10"
               >
@@ -103,10 +106,10 @@ export default function Menu({ products, categories, loading, selectedCategory, 
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </AnimatePresence>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       )}
       
       {/* Spacer để tránh overlap với minicart */}

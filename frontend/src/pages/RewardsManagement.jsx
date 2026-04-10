@@ -5,6 +5,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import CustomSelect from "../components/CustomSelect";
 
 const API = "http://127.0.0.1:8000/api";
 
@@ -319,14 +320,14 @@ export default function RewardsManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Loại Quà</label>
-                    <select 
-                      value={rewardForm.reward_type_id} 
-                      onChange={e => setRewardForm({...rewardForm, reward_type_id: e.target.value})} 
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A]"
-                    >
-                      <option value={1} className="bg-[#1E3932]">Quà Tặng Hiện Vật</option>
-                      <option value={2} className="bg-[#1E3932]">Mã Giảm Giá</option>
-                    </select>
+                    <CustomSelect 
+                      value={parseInt(rewardForm.reward_type_id) || 1} 
+                      onChange={val => setRewardForm({...rewardForm, reward_type_id: parseInt(val)})} 
+                      options={[
+                        { value: 1, label: "Quà Tặng Hiện Vật" },
+                        { value: 2, label: "Mã Giảm Giá" }
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Điểm Cần Đổi</label>

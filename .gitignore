@@ -55,3 +55,4 @@ yarn-error.log*
 validate_output.txt
 validate_db.py
 docs/
+uploads/

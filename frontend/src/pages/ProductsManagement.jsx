@@ -7,6 +7,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import CustomSelect from "../components/CustomSelect";
 
 const API = "http://127.0.0.1:8000/api";
 
@@ -252,23 +253,25 @@ export default function ProductsManagement() {
                   </div>
                   <div>
                     <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Quản lý tồn kho</label>
-                    <select 
+                    <CustomSelect 
                       value={productForm.quantity === null || productForm.quantity === "" ? "unlimited" : "limited"} 
-                      onChange={e => setProductForm({...productForm, quantity: e.target.value === "unlimited" ? null : 0})} 
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A]"
-                    >
-                      <option value="unlimited" className="bg-[#1E3932]">Luôn có sẵn</option>
-                      <option value="limited" className="bg-[#1E3932]">Có quản lý số lượng</option>
-                    </select>
+                      onChange={val => setProductForm({...productForm, quantity: val === "unlimited" ? null : 0})} 
+                      options={[
+                        { value: "unlimited", label: "Luôn có sẵn" },
+                        { value: "limited", label: "Có quản lý số lượng" }
+                      ]}
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Danh mục</label>
-                    <select value={productForm.category_id} onChange={e => setProductForm({...productForm, category_id: e.target.value})} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A]">
-                      <option value="" className="bg-[#1E3932]">Chọn danh mục</option>
-                      {categories.map(c => <option key={c.id} value={c.id} className="bg-[#1E3932]">{c.category_name}</option>)}
-                    </select>
+                    <CustomSelect 
+                      value={productForm.category_id} 
+                      onChange={val => setProductForm({...productForm, category_id: val})} 
+                      placeholder="Chọn danh mục"
+                      options={categories.map(c => ({ value: c.id.toString(), label: c.category_name }))}
+                    />
                   </div>
                   <AnimatePresence>
                     {(productForm.quantity !== null && productForm.quantity !== "") && (
