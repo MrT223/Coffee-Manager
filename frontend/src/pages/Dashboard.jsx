@@ -110,7 +110,7 @@ export default function Dashboard() {
     .filter(o => o.status_id === 4)
     .reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0);
   const totalProducts = products.length;
-  const outOfStock = products.filter(p => p.quantity <= 0).length;
+  const outOfStock = products.filter(p => p.quantity !== null && p.quantity <= 0).length;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   const recentOrders = [...orders].sort((a, b) => b.id - a.id).slice(0, 8);
