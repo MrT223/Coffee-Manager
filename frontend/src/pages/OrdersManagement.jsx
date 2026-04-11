@@ -36,6 +36,7 @@ function StatusBadge({ statusId }) {
 
 export default function OrdersManagement() {
   const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -44,8 +45,12 @@ export default function OrdersManagement() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API}/orders/`);
-      setOrders(res.data || []);
+      const [ordRes, prodRes] = await Promise.all([
+        axios.get(`${API}/orders/`),
+        axios.get(`${API}/products/`),
+      ]);
+      setOrders(ordRes.data || []);
+      setProducts(prodRes.data || []);
     } catch (err) {
       console.error("Lỗi tải đơn hàng:", err);
     } finally {
@@ -54,6 +59,11 @@ export default function OrdersManagement() {
   };
 
   useEffect(() => { fetchOrders(); }, []);
+
+  const getProductName = (productId) => {
+    const product = products.find(p => p.id === productId);
+    return product ? product.name : `Sản phẩm #${productId}`;
+  };
 
   const updateStatus = async (orderId, newStatusId) => {
     try {
@@ -112,7 +122,7 @@ export default function OrdersManagement() {
               {(selectedOrder.order_details || []).map((detail, i) => (
                 <div key={i} className="py-3 flex justify-between items-center">
                   <div>
-                    <span className="text-sm font-bold text-white">Sản phẩm #{detail.product_id}</span>
+                    <span className="text-sm font-bold text-white">{getProductName(detail.product_id)}</span>
                     <span className="text-white/40 text-xs ml-2">x{detail.quantity}</span>
                   </div>
                   <span className="text-sm font-black text-amber-300 block max-w-[100px] truncate ml-auto flex-shrink-0 text-right" title={fmt(detail.price_at_time * detail.quantity) + " đ"}>{fmtShort(detail.price_at_time * detail.quantity)} đ</span>
