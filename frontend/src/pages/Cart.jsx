@@ -126,33 +126,33 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
     const s = STATUS_MAP[selectedOrder.status_id] || STATUS_MAP[1];
     return (
       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-2xl mx-auto">
-        <button onClick={() => setSelectedOrder(null)} className="flex items-center gap-2 text-white/40 font-bold text-[10px] mb-6 hover:text-white transition-colors uppercase tracking-widest">
+        <button onClick={() => setSelectedOrder(null)} className="flex items-center gap-2 opacity-40 font-bold text-[10px] mb-6 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">
           <ChevronRight className="size-4 rotate-180" /> QUAY LẠI
         </button>
-        <div className="bg-[#00704A] rounded-3xl border border-white/10 p-8">
+        <div className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 p-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-black text-white tracking-tight">{orderCode(selectedOrder)}</h2>
+            <h2 className="text-xl font-black  tracking-tight">{orderCode(selectedOrder)}</h2>
             <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider ${s.badgeBg}`}>{s.label}</span>
           </div>
-          <p className="text-xs text-white/40 font-medium mb-6">{new Date(selectedOrder.order_date).toLocaleString("vi-VN")}</p>
+          <p className="text-xs opacity-40 font-medium mb-6">{new Date(selectedOrder.order_date).toLocaleString("vi-VN")}</p>
 
-          <div className="bg-white/5 rounded-2xl p-5 mb-6 border border-white/10">
-            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-4">Chi tiết món</h3>
-            <div className="divide-y divide-white/5">
+          <div className="bg-black/5 dark:bg-white/5 rounded-2xl p-5 mb-6 border border-black/5 dark:border-white/10">
+            <h3 className="text-xs font-bold opacity-40 uppercase tracking-wider mb-4">Chi tiết món</h3>
+            <div className="divide-y divide-black/5 dark:divide-white/5">
               {(selectedOrder.order_details || []).map((detail, i) => (
                 <div key={i} className="py-3 flex justify-between items-center">
                   <div>
-                    <span className="text-sm font-bold text-white">Sản phẩm #{detail.product_id}</span>
-                    <span className="text-white/40 text-xs ml-2">x{detail.quantity}</span>
+                    <span className="text-sm font-bold ">Sản phẩm #{detail.product_id}</span>
+                    <span className="opacity-40 text-xs ml-2">x{detail.quantity}</span>
                   </div>
-                  <span className="text-sm font-black text-amber-300 truncate max-w-[100px] ml-auto block text-right" title={fmt(detail.price_at_time * detail.quantity) + " đ"}>{fmtShort(detail.price_at_time * detail.quantity)} đ</span>
+                  <span className="text-sm font-black text-amber-600 dark:text-amber-300 truncate max-w-[100px] ml-auto block text-right" title={fmt(detail.price_at_time * detail.quantity) + " đ"}>{fmtShort(detail.price_at_time * detail.quantity)} đ</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex justify-between items-center p-5 bg-[#1E3932] text-white rounded-2xl mb-6 gap-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-white/40 flex-shrink-0">Tổng tiền</span>
+          <div className="flex justify-between items-center p-5 bg-black/5 dark:bg-[#1E3932]  rounded-2xl mb-6 gap-4">
+            <span className="text-xs font-bold uppercase tracking-wider opacity-40 flex-shrink-0">Tổng tiền</span>
             <span className="text-xl font-black min-w-0 truncate text-right block max-w-[150px]" title={fmt(selectedOrder.total_price) + " đ"}>{fmt(selectedOrder.total_price)} đ</span>
           </div>
 
@@ -160,7 +160,7 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
             <button
               onClick={() => handleCancelOrder(selectedOrder.id)}
               disabled={cancelling === selectedOrder.id}
-              className="w-full py-3 bg-rose-500/15 text-rose-300 rounded-2xl text-xs font-black flex items-center justify-center gap-2 hover:bg-rose-500/25 border border-rose-500/20 transition-all"
+              className="w-full py-3 bg-rose-500/10 text-rose-500 dark:text-rose-300 rounded-2xl text-xs font-black flex items-center justify-center gap-2 hover:bg-rose-500/20 border border-rose-500/20 transition-all"
             >
               {cancelling === selectedOrder.id ? <Loader2 className="size-4 animate-spin" /> : <XCircle className="size-4" />}
               Hủy đơn hàng
@@ -174,22 +174,22 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
   return (
     <div className="max-w-4xl mx-auto">
       {/* TABS */}
-      <div className="flex bg-white/5 p-1 rounded-2xl w-fit mb-8 border border-white/5 overflow-x-auto max-w-full">
+      <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-2xl w-fit mb-8 border border-black/5 dark:border-white/5 overflow-x-auto max-w-full">
         <button
           onClick={() => setActiveTab("current")}
-          className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeTab === "current" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}
+          className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeTab === "current" ? "bg-[var(--bg-card)]  shadow-sm" : "opacity-40 hover:text-black dark:hover:text-white/70"}`}
         >
           Giỏ hàng
         </button>
         <button
           onClick={() => setActiveTab("tracking")}
-          className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeTab === "tracking" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}
+          className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeTab === "tracking" ? "bg-[var(--bg-card)]  shadow-sm" : "opacity-40 hover:text-black dark:hover:text-white/70"}`}
         >
           Đang xử lý
         </button>
         <button
           onClick={() => setActiveTab("history")}
-          className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeTab === "history" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}
+          className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeTab === "history" ? "bg-[var(--bg-card)]  shadow-sm" : "opacity-40 hover:text-black dark:hover:text-white/70"}`}
         >
           Lịch sử
         </button>
@@ -198,30 +198,30 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
       {/* TAB 1: GIỎ HÀNG */}
       {activeTab === "current" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="bg-[#00704A] rounded-3xl border border-white/10 p-6">
-            <h2 className="text-xl font-extrabold text-white mb-6 tracking-tight">Chi tiết món đã chọn</h2>
+          <div className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 p-6">
+            <h2 className="text-xl font-extrabold  mb-6 tracking-tight">Chi tiết món đã chọn</h2>
             {cart.length > 0 ? (
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-black/5 dark:divide-white/5">
                 {cart.map((item) => (
                   <div key={item.id} className="py-4 flex items-center gap-4">
                     <img src={item.image_url || "https://via.placeholder.com/150"} className="size-16 rounded-2xl object-cover" />
                     <div className="flex-grow min-w-0">
-                      <h3 className="text-sm font-bold text-white truncate">{item.name}</h3>
+                      <h3 className="text-sm font-bold  truncate">{item.name}</h3>
                       {currentUser?.role_id === 2 ? (
                         <div className="mt-0.5">
-                          <span className="text-white/40 line-through text-[10px] font-semibold mr-2">{fmt(item.price)} đ</span>
-                          <span className="text-emerald-400 font-black text-xs truncate" title={fmt(item.price * 0.8) + " đ"}>{fmtShort(item.price * 0.8)} đ</span>
+                          <span className="opacity-40 line-through text-[10px] font-semibold mr-2">{fmt(item.price)} đ</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-black text-xs truncate" title={fmt(item.price * 0.8) + " đ"}>{fmtShort(item.price * 0.8)} đ</span>
                         </div>
                       ) : (
-                        <p className="text-amber-300 font-black text-xs mt-0.5 truncate" title={fmt(item.price) + " đ"}>{fmtShort(item.price)} đ</p>
+                        <p className="text-amber-600 dark:text-amber-300 font-black text-xs mt-0.5 truncate" title={fmt(item.price) + " đ"}>{fmtShort(item.price)} đ</p>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                      <button onClick={() => updateQty(item.id, -1)} className="text-white/40 hover:text-white font-bold px-1"><Minus className="size-3" /></button>
-                      <span className="text-xs font-black w-4 text-center text-white">{item.qty}</span>
-                      <button onClick={() => updateQty(item.id, 1)} className="text-white/40 hover:text-white font-bold px-1"><Plus className="size-3" /></button>
+                    <div className="flex items-center gap-3 bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-xl border border-black/5 dark:border-white/10">
+                      <button onClick={() => updateQty(item.id, -1)} className="opacity-40 hover:text-black dark:hover:text-white font-bold px-1"><Minus className="size-3" /></button>
+                      <span className="text-xs font-black w-4 text-center ">{item.qty}</span>
+                      <button onClick={() => updateQty(item.id, 1)} className="opacity-40 hover:text-black dark:hover:text-white font-bold px-1"><Plus className="size-3" /></button>
                     </div>
-                    <button onClick={() => removeFromCart(item.id)} className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors">
+                    <button onClick={() => removeFromCart(item.id)} className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors">
                       <Trash2 className="size-4" />
                     </button>
                   </div>
@@ -229,14 +229,14 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
               </div>
             ) : (
               <div className="text-center py-16">
-                <Package className="size-12 text-white/10 mx-auto mb-3" />
-                <p className="text-white/30 text-sm font-medium italic">Giỏ hàng của bạn đang trống</p>
+                <Package className="size-12 opacity-10 mx-auto mb-3" />
+                <p className="opacity-30 text-sm font-medium italic">Giỏ hàng của bạn đang trống</p>
               </div>
             )}
           </div>
 
           {cart.length > 0 && (
-            <div className="bg-[#1E3932] text-white rounded-3xl p-8 flex items-center justify-between border border-white/10">
+            <div className="bg-black dark:bg-[#1E3932] text-white rounded-3xl p-8 flex items-center justify-between border border-black/5 dark:border-white/10">
               <div className="min-w-0 pr-4">
                 <p className="text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-1 truncate">Tổng cộng thanh toán</p>
                 <h3 className="text-3xl font-black tracking-tight truncate block max-w-full" title={new Intl.NumberFormat('vi-VN').format(cartTotal) + " VND"}>{fmtShort(cartTotal)} <span className="text-sm font-medium opacity-40">VND</span></h3>

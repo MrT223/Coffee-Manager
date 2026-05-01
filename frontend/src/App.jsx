@@ -5,7 +5,8 @@ import axios from "axios";
 import { 
   LayoutDashboard, ShoppingCart, CupSoda, Sandwich, Settings, 
   Users, Search, MapPin, LogOut, Gift, ClipboardList, 
-  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus
+  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus,
+  Sun, Moon, Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, Transition } from '@headlessui/react';
@@ -21,6 +22,7 @@ import ProductsManagement from "./pages/ProductsManagement";
 import Loyalty from "./pages/Loyalty";
 import AdminPanel from "./pages/AdminPanel";
 import RewardsManagement from "./pages/RewardsManagement";
+import SettingsPage from "./pages/Settings";
 
 // Cấu hình Axios Interceptor để tự động gắn Token
 axios.interceptors.request.use((config) => {
@@ -34,8 +36,8 @@ axios.interceptors.request.use((config) => {
 const SidebarLink = ({ icon: Icon, label, path, active, onClick, visible = true }) => {
   if (!visible) return null;
   return (
-    <button onClick={() => onClick(path)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[13px] font-semibold transition-all duration-200 ${active ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/30" : "text-[#d4c9a8]/70 hover:bg-white/5 hover:text-[#d4c9a8]"}`}>
-      <Icon className={`size-[18px] ${active ? "text-white" : "text-[#d4c9a8]/50"}`} />
+    <button onClick={() => onClick(path)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[13px] font-semibold transition-all duration-200 ${active ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/30" : "text-black/60 dark:text-[#d4c9a8]/70 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-[#d4c9a8]"}`}>
+      <Icon className={`size-[18px] ${active ? "text-white" : "text-black/40 dark:text-[#d4c9a8]/50"}`} />
       {label}
     </button>
   );
@@ -58,6 +60,18 @@ function MainLayout() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
   
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -176,23 +190,23 @@ function MainLayout() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#0d1f1b] antialiased text-white overflow-x-hidden">
+    <div className="min-h-screen flex bg-[var(--bg-primary)] antialiased text-[color:var(--text-primary)] overflow-x-hidden transition-colors duration-300">
       {/* ═══════ SIDEBAR ═══════ */}
-      <aside className="w-[260px] bg-gradient-to-b from-[#1E3932] to-[#0d1f1b] p-5 flex flex-col fixed h-full z-30 border-r border-white/5">
+      <aside className="w-[260px] bg-[var(--sidebar-bg)] dark:bg-gradient-to-b dark:from-[#1E3932] dark:to-[#0d1f1b] p-5 flex flex-col fixed h-full z-30 border-r border-black/5 dark:border-white/5 transition-colors duration-300">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-10 px-2 pt-2">
           <div className="bg-[#00704A] p-2.5 rounded-2xl shadow-lg shadow-[#00704A]/30 flex-shrink-0">
             <Coffee className="size-6 text-white" />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-lg font-extrabold tracking-tight text-white leading-tight whitespace-nowrap">Cafe Sýbẩu</span>
+            <span className="text-lg font-extrabold tracking-tight  leading-tight whitespace-nowrap">Cafe Sýbẩu</span>
             <span className="text-lg font-extrabold text-[#00704A] uppercase whitespace-nowrap">67</span>
           </div>
         </div>
 
         {/* Menu label */}
         <div className="px-4 mb-3">
-          <span className="text-[9px] font-bold text-[#d4c9a8]/30 uppercase tracking-[0.3em]">Menu</span>
+          <span className="text-[9px] font-bold text-black/30 dark:text-[#d4c9a8]/30 uppercase tracking-[0.3em]">Menu</span>
         </div>
         <nav className="flex-grow space-y-1">
           <SidebarLink icon={LayoutDashboard} label="Dashboard" path="/dashboard" active={location.pathname === "/dashboard"} onClick={navigate} visible={currentUser?.role_id === 3} />
@@ -211,16 +225,16 @@ function MainLayout() {
 
         {/* User info at bottom of sidebar */}
         {currentUser && (
-          <div className="mt-4 p-3 bg-white/5 rounded-2xl flex items-center gap-3">
+          <div className="mt-4 p-3 bg-black/5 dark:bg-white/5 rounded-2xl flex items-center gap-3 border border-black/5 dark:border-white/5 transition-colors">
             <div className="size-9 rounded-xl overflow-hidden flex-shrink-0">
               <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}&background=00704A&color=ffffff&bold=true&size=36`} alt="avatar" className="w-full h-full object-cover" />
             </div>
             <div className="flex-grow min-w-0">
-              <div className="text-xs font-bold text-white truncate">{currentUser.username}</div>
-              <div className="text-[9px] text-[#d4c9a8]/50 font-medium">{currentUser.role_id === 1 ? "Customer" : currentUser.role_id === 2 ? "Staff" : "Admin"}</div>
+              <div className="text-xs font-bold  truncate">{currentUser.username}</div>
+              <div className="text-[9px] opacity-50 font-medium">{currentUser.role_id === 1 ? "Customer" : currentUser.role_id === 2 ? "Staff" : "Admin"}</div>
             </div>
-            <button onClick={handleLogout} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors" title="Đăng xuất">
-              <LogOut className="size-3.5 text-[#d4c9a8]/50" />
+            <button onClick={handleLogout} className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition-colors" title="Đăng xuất">
+              <LogOut className="size-3.5 opacity-50" />
             </button>
           </div>
         )}
@@ -229,13 +243,21 @@ function MainLayout() {
       {/* ═══════ MAIN CONTENT ═══════ */}
       <div className="flex-1 flex flex-col ml-[260px] relative">
         {/* Header */}
-        <header className="bg-[#1E3932]/80 backdrop-blur-xl p-4 px-8 border-b border-white/5 flex items-center sticky top-0 z-20 justify-between">
+        <header className="bg-white/80 dark:bg-[#1E3932]/80 backdrop-blur-xl p-4 px-8 border-b border-black/5 dark:border-white/5 flex items-center sticky top-0 z-20 justify-between transition-colors duration-300">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-white/30" />
-            <input type="text" placeholder="Tìm kiếm món uống..." className="w-full pl-11 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-xs text-white placeholder-white/30 outline-none focus:bg-white/10 focus:border-[#00704A]/50 transition-all" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 opacity-30" />
+            <input type="text" placeholder="Tìm kiếm món uống..." className="w-full pl-11 pr-4 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl text-xs  placeholder-black/30 dark:placeholder-white/30 outline-none focus:bg-black/10 dark:focus:bg-white/10 focus:border-[#00704A]/50 transition-all" />
           </div>
 
           <div className="flex items-center gap-4">
+            <button 
+              onClick={toggleTheme} 
+              className="p-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl opacity-60 hover:bg-black/10 dark:hover:bg-white/10 transition-all"
+              title={theme === "dark" ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+            >
+              {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+            </button>
+
             {(currentUser?.role_id === 1 || currentUser?.role_id === 2) && (
               <button onClick={() => navigate("/cart")} className="relative p-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-[#00704A]/20 hover:border-[#00704A]/30 transition-all">
                 <ShoppingCart className="size-5" />
@@ -262,6 +284,7 @@ function MainLayout() {
             <Route path="/loyalty" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1]}><Loyalty currentUser={currentUser} /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><AdminPanel /></ProtectedRoute>} />
             <Route path="/admin/rewards" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><RewardsManagement /></ProtectedRoute>} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </main>
 

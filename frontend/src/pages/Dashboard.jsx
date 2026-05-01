@@ -22,15 +22,15 @@ function StatCard({ icon: Icon, label, value, sub, color, delay = 0 }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
-      className="bg-[#00704A] rounded-3xl border border-white/10 p-6 flex items-start gap-4 hover:border-white/20 transition-all overflow-hidden"
+      className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 p-6 flex items-start gap-4 hover:border-black/10 dark:hover:border-white/20 transition-all overflow-hidden shadow-sm"
     >
       <div className={`p-3 rounded-2xl border flex-shrink-0 ${colorMap[color] || colorMap.amber}`}>
         <Icon className="size-5" />
       </div>
       <div className="flex-grow min-w-0">
-        <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest mb-1 truncate">{label}</p>
-        <h3 className="text-2xl font-black text-white tracking-tight truncate">{value}</h3>
-        {sub && <p className="text-[10px] text-white/40 font-semibold mt-1 truncate">{sub}</p>}
+        <p className="text-[10px] opacity-40 font-bold uppercase tracking-widest mb-1 truncate">{label}</p>
+        <h3 className="text-2xl font-black  tracking-tight truncate">{value}</h3>
+        {sub && <p className="text-[10px] text-black/30 dark:text-white/40 font-semibold mt-1 truncate">{sub}</p>}
       </div>
     </motion.div>
   );
@@ -85,7 +85,7 @@ export default function Dashboard() {
     return (
       <div className="flex flex-col items-center justify-center py-32 gap-4">
         <Loader2 className="size-10 text-[#00704A] animate-spin" />
-        <span className="text-white/30 text-xs font-black uppercase tracking-widest">Đang tải Dashboard...</span>
+        <span className="opacity-30 text-xs font-black uppercase tracking-widest">Đang tải Dashboard...</span>
       </div>
     );
   }
@@ -164,8 +164,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-black text-white tracking-tight">Dashboard</h1>
-        <p className="text-white/40 text-sm font-medium mt-1">Tổng quan tình trạng bán hàng</p>
+        <h1 className="text-3xl font-black  tracking-tight">Dashboard</h1>
+        <p className="opacity-40 text-sm font-medium mt-1">Tổng quan tình trạng bán hàng</p>
       </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -179,20 +179,20 @@ export default function Dashboard() {
         {/* Trạng thái đơn hàng */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="bg-[#00704A] rounded-3xl border border-white/10 p-6 lg:col-span-1"
+          className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 p-6 lg:col-span-1 shadow-sm"
         >
           <div className="flex items-center gap-2 mb-6">
-            <BarChart3 className="size-4 text-white/60" />
-            <h3 className="text-sm font-extrabold text-white">Trạng thái đơn hàng</h3>
+            <BarChart3 className="size-4 text-black/40 dark:text-white/60" />
+            <h3 className="text-sm font-extrabold ">Trạng thái đơn hàng</h3>
           </div>
           <div className="space-y-4">
             {statusBreakdown.map((s, i) => (
               <div key={i}>
                 <div className="flex justify-between mb-1.5">
-                  <span className="text-[10px] font-bold text-white/50">{s.label}</span>
-                  <span className="text-[10px] font-black text-white">{s.count}</span>
+                  <span className="text-[10px] font-bold opacity-40">{s.label}</span>
+                  <span className="text-[10px] font-black ">{s.count}</span>
                 </div>
-                <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(s.count / maxStatusCount) * 100}%` }}
@@ -204,7 +204,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-white/10 grid grid-cols-2 gap-3">
+          <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/10 grid grid-cols-2 gap-3">
             <div className="bg-emerald-500/15 rounded-2xl p-3 text-center">
               <div className="text-lg font-black text-emerald-300">{completedOrders}</div>
               <div className="text-[9px] font-bold text-emerald-400/70 uppercase">Hoàn thành</div>
@@ -219,41 +219,41 @@ export default function Dashboard() {
         {/* Đơn hàng gần đây */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="bg-[#00704A] rounded-3xl border border-white/10 p-6 lg:col-span-2"
+          className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 p-6 lg:col-span-2 shadow-sm"
         >
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <Clock className="size-4 text-white/60" />
-              <h3 className="text-sm font-extrabold text-white">Đơn hàng gần đây</h3>
+              <Clock className="size-4 text-black/40 dark:text-white/60" />
+              <h3 className="text-sm font-extrabold ">Đơn hàng gần đây</h3>
             </div>
-            <span className="text-[10px] text-white/40 font-bold">{totalOrders} đơn tổng cộng</span>
+            <span className="text-[10px] opacity-30 font-bold">{totalOrders} đơn tổng cộng</span>
           </div>
 
           {recentOrders.length === 0 ? (
             <div className="text-center py-12">
-              <Package className="size-10 text-white/10 mx-auto mb-3" />
-              <p className="text-white/30 text-xs font-medium italic">Chưa có đơn hàng nào</p>
+              <Package className="size-10 text-black/5 dark:text-white/10 mx-auto mb-3" />
+              <p className="text-black/20 dark:text-white/30 text-xs font-medium italic">Chưa có đơn hàng nào</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider pb-3 px-2">Mã đơn</th>
-                    <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider pb-3 px-2">Ngày đặt</th>
-                    <th className="text-right text-[10px] font-bold text-white/40 uppercase tracking-wider pb-3 px-2">Tổng tiền</th>
-                    <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider pb-3 px-2">Số món</th>
-                    <th className="text-right text-[10px] font-bold text-white/40 uppercase tracking-wider pb-3 px-2">Trạng thái</th>
+                  <tr className="border-b border-black/5 dark:border-white/10">
+                    <th className="text-left text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider pb-3 px-2">Mã đơn</th>
+                    <th className="text-left text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider pb-3 px-2">Ngày đặt</th>
+                    <th className="text-right text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider pb-3 px-2">Tổng tiền</th>
+                    <th className="text-left text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider pb-3 px-2">Số món</th>
+                    <th className="text-right text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider pb-3 px-2">Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-white/5 transition-colors">
+                    <tr key={order.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                       <td className="py-3 px-2">
-                        <span className="text-xs font-bold text-white">{orderCode(order)}</span>
+                        <span className="text-xs font-bold ">{orderCode(order)}</span>
                       </td>
                       <td className="py-3 px-2">
-                        <span className="text-[11px] text-white/50 font-medium">
+                        <span className="text-[11px] opacity-40 font-medium">
                           {new Date(order.order_date).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </td>
@@ -261,7 +261,7 @@ export default function Dashboard() {
                         <span className="text-xs font-black text-amber-300 truncate block max-w-[100px] ml-auto" title={fmt(order.total_price) + " đ"}>{fmtShort(order.total_price)} đ</span>
                       </td>
                       <td className="py-3 px-2">
-                        <span className="text-[11px] text-white/50 font-medium">
+                        <span className="text-[11px] opacity-40 font-medium">
                           {(order.order_details || []).reduce((s, d) => s + d.quantity, 0)} món
                         </span>
                       </td>
@@ -278,18 +278,18 @@ export default function Dashboard() {
       </div>
 
       {/* Sản phẩm bán chạy */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-        className="bg-[#00704A] rounded-3xl border border-white/10 p-6"
-      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 p-6 shadow-sm"
+        >
         <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="size-4 text-white/60" />
-          <h3 className="text-sm font-extrabold text-white">Sản phẩm bán chạy</h3>
+          <TrendingUp className="size-4 text-black/40 dark:text-white/60" />
+          <h3 className="text-sm font-extrabold ">Sản phẩm bán chạy</h3>
         </div>
 
         {topProducts.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-white/30 text-xs font-medium italic">Chưa có dữ liệu bán hàng</p>
+            <p className="text-black/20 dark:text-white/30 text-xs font-medium italic">Chưa có dữ liệu bán hàng</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -309,9 +309,9 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <div className="flex-grow min-w-0">
-                  <h4 className="text-xs font-bold text-white truncate">{item.product.name}</h4>
-                  <p className="text-[10px] text-amber-300 font-black">{item.qty} ly đã bán</p>
-                  <p className="text-[10px] text-white/40 font-medium">{fmt(item.revenue)} đ</p>
+                  <h4 className="text-xs font-bold  truncate">{item.product.name}</h4>
+                  <p className="text-[10px] text-amber-600 dark:text-amber-300 font-black">{item.qty} ly đã bán</p>
+                  <p className="text-[10px] text-black/30 dark:text-white/40 font-medium">{fmt(item.revenue)} đ</p>
                 </div>
               </div>
             ))}

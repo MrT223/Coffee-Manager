@@ -107,23 +107,23 @@ export default function OrdersManagement() {
         <button onClick={() => setSelectedOrder(null)} className="flex items-center gap-2 text-white/40 font-bold text-[10px] mb-6 hover:text-white transition-colors uppercase tracking-widest">
           <ChevronLeft className="size-4" /> QUAY LẠI DANH SÁCH
         </button>
-        <div className="bg-[#00704A] rounded-3xl border border-white/10 p-8">
+        <div className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 p-8 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-black text-white tracking-tight">{orderCode(selectedOrder)}</h2>
-              <p className="text-xs text-white/40 font-medium mt-1">{new Date(selectedOrder.order_date).toLocaleString("vi-VN")}</p>
+              <h2 className="text-2xl font-black  tracking-tight">{orderCode(selectedOrder)}</h2>
+              <p className="text-xs opacity-40 font-medium mt-1">{new Date(selectedOrder.order_date).toLocaleString("vi-VN")}</p>
             </div>
             <StatusBadge statusId={selectedOrder.status_id} />
           </div>
 
-          <div className="bg-white/5 rounded-2xl p-5 mb-6 border border-white/10">
-            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-4">Chi tiết món</h3>
-            <div className="divide-y divide-white/5">
+          <div className="bg-black/5 dark:bg-white/5 rounded-2xl p-5 mb-6 border border-black/5 dark:border-white/10">
+            <h3 className="text-xs font-bold text-black/30 dark:text-white/40 uppercase tracking-wider mb-4">Chi tiết món</h3>
+            <div className="divide-y divide-black/5 dark:divide-white/5">
               {(selectedOrder.order_details || []).map((detail, i) => (
                 <div key={i} className="py-3 flex justify-between items-center">
                   <div>
-                    <span className="text-sm font-bold text-white">{getProductName(detail.product_id)}</span>
-                    <span className="text-white/40 text-xs ml-2">x{detail.quantity}</span>
+                    <span className="text-sm font-bold ">{getProductName(detail.product_id)}</span>
+                    <span className="opacity-40 text-xs ml-2">x{detail.quantity}</span>
                   </div>
                   <span className="text-sm font-black text-amber-300 block max-w-[100px] truncate ml-auto flex-shrink-0 text-right" title={fmt(detail.price_at_time * detail.quantity) + " đ"}>{fmtShort(detail.price_at_time * detail.quantity)} đ</span>
                 </div>
@@ -131,8 +131,8 @@ export default function OrdersManagement() {
             </div>
           </div>
 
-          <div className="flex justify-between items-center p-5 bg-[#1E3932] text-white rounded-2xl mb-6">
-            <span className="text-xs font-bold uppercase tracking-wider text-white/40 flex-shrink-0">Tổng tiền</span>
+          <div className="flex justify-between items-center p-5 bg-black/5 dark:bg-[#1E3932]  rounded-2xl mb-6 border border-black/5 dark:border-white/5">
+            <span className="text-xs font-bold uppercase tracking-wider opacity-40 flex-shrink-0">Tổng tiền</span>
             <span className="text-xl font-black min-w-0 truncate ml-4" title={fmt(selectedOrder.total_price) + " đ"}>{fmt(selectedOrder.total_price)} đ</span>
           </div>
 
@@ -147,8 +147,8 @@ export default function OrdersManagement() {
                     onClick={() => updateStatus(selectedOrder.id, nextId)}
                     disabled={updating === selectedOrder.id}
                     className={`flex-1 py-3 rounded-2xl text-xs font-black flex items-center justify-center gap-2 transition-all active:scale-95 ${isCancel
-                        ? "bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 border border-rose-500/20"
-                        : "bg-white text-[#00704A] hover:bg-white/90 shadow-lg"
+                        ? "bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-300 hover:bg-rose-500/20 border border-rose-500/20"
+                        : "bg-[#00704A] text-white hover:bg-[#00804f] shadow-lg shadow-[#00704A]/20"
                       }`}
                   >
                     {updating === selectedOrder.id ? <Loader2 className="size-4 animate-spin" /> : <next.icon className="size-4" />}
@@ -167,23 +167,23 @@ export default function OrdersManagement() {
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Quản lý đơn hàng</h1>
-          <p className="text-white/40 text-sm font-medium mt-1">Xử lý và cập nhật trạng thái đơn hàng</p>
+          <h1 className="text-3xl font-black  tracking-tight">Quản lý đơn hàng</h1>
+          <p className="opacity-40 text-sm font-medium mt-1">Xử lý và cập nhật trạng thái đơn hàng</p>
         </div>
-        <button onClick={fetchOrders} className="p-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-          <RefreshCw className={`size-4 text-white/50 ${loading ? "animate-spin" : ""}`} />
+        <button onClick={fetchOrders} className="p-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+          <RefreshCw className={`size-4 opacity-50 ${loading ? "animate-spin" : ""}`} />
         </button>
       </motion.div>
 
       {/* Filter tabs */}
-      <div className="flex bg-white/5 p-1 rounded-2xl w-fit gap-1 overflow-x-auto max-w-full border border-white/5">
-        <button onClick={() => setFilter("all")} className={`px-4 py-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all ${filter === "all" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
+      <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-2xl w-fit gap-1 overflow-x-auto max-w-full border border-black/5 dark:border-white/5">
+        <button onClick={() => setFilter("all")} className={`px-4 py-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all ${filter === "all" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "opacity-40 hover:text-black dark:hover:text-white/70"}`}>
           Tất cả ({orders.length})
         </button>
         {Object.entries(STATUS_MAP).map(([id, s]) => {
           const count = orders.filter(o => o.status_id === parseInt(id)).length;
           return (
-            <button key={id} onClick={() => setFilter(id)} className={`px-4 py-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all ${filter === id ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
+            <button key={id} onClick={() => setFilter(id)} className={`px-4 py-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all ${filter === id ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "opacity-40 hover:text-black dark:hover:text-white/70"}`}>
               {s.label} ({count})
             </button>
           );
@@ -193,41 +193,41 @@ export default function OrdersManagement() {
       {loading ? (
         <div className="flex flex-col items-center py-20 gap-3">
           <Loader2 className="size-8 text-[#00704A] animate-spin" />
-          <span className="text-white/30 text-[10px] font-black uppercase tracking-widest">Đang tải...</span>
+          <span className="opacity-30 text-[10px] font-black uppercase tracking-widest">Đang tải...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
-          <Package className="size-12 text-white/10 mx-auto mb-3" />
-          <p className="text-white/30 text-sm font-medium italic">Không có đơn hàng nào</p>
+          <Package className="size-12 opacity-10 mx-auto mb-3" />
+          <p className="opacity-30 text-sm font-medium italic">Không có đơn hàng nào</p>
         </div>
       ) : (
-        <div className="bg-[#00704A] rounded-3xl border border-white/10 overflow-hidden">
+        <div className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 overflow-hidden shadow-sm">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-6">Mã đơn</th>
-                <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Ngày đặt</th>
-                <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Số món</th>
-                <th className="text-right text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Tổng tiền</th>
-                <th className="text-center text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Trạng thái</th>
-                <th className="text-center text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-6">Thao tác</th>
+              <tr className="border-b border-black/5 dark:border-white/10">
+                <th className="text-left text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-6">Mã đơn</th>
+                <th className="text-left text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-4">Ngày đặt</th>
+                <th className="text-left text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-4">Số món</th>
+                <th className="text-right text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-4">Tổng tiền</th>
+                <th className="text-center text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-4">Trạng thái</th>
+                <th className="text-center text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-6">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-black/5 dark:divide-white/5">
               {filtered.map(order => {
                 const nextStatuses = NEXT_STATUS[order.status_id];
                 return (
-                  <tr key={order.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={order.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                     <td className="py-4 px-6">
-                      <span className="text-sm font-bold text-white">{orderCode(order)}</span>
+                      <span className="text-sm font-bold ">{orderCode(order)}</span>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-[11px] text-white/50 font-medium">
+                      <span className="text-[11px] opacity-40 font-medium">
                         {new Date(order.order_date).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-xs text-white/50 font-medium">
+                      <span className="text-xs opacity-40 font-medium">
                         {(order.order_details || []).reduce((s, d) => s + d.quantity, 0)} món
                       </span>
                     </td>
@@ -239,15 +239,15 @@ export default function OrdersManagement() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => setSelectedOrder(order)} className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors" title="Xem chi tiết">
-                          <Eye className="size-3.5 text-white/50" />
+                        <button onClick={() => setSelectedOrder(order)} className="p-2 bg-black/5 dark:bg-white/10 rounded-xl hover:bg-black/10 dark:hover:bg-white/20 transition-colors" title="Xem chi tiết">
+                          <Eye className="size-3.5 opacity-50" />
                         </button>
                         {nextStatuses && nextStatuses.filter(id => id !== 5).map(nextId => (
                           <button
                             key={nextId}
                             onClick={() => updateStatus(order.id, nextId)}
                             disabled={updating === order.id}
-                            className="px-3 py-1.5 bg-white text-[#00704A] rounded-lg text-[9px] font-black hover:bg-white/90 transition-all"
+                            className="px-3 py-1.5 bg-[#00704A] text-white rounded-lg text-[9px] font-black hover:bg-[#00804f] transition-all"
                           >
                             {updating === order.id ? "..." : STATUS_MAP[nextId]?.label}
                           </button>
@@ -256,7 +256,7 @@ export default function OrdersManagement() {
                           <button
                             onClick={() => updateStatus(order.id, 5)}
                             disabled={updating === order.id}
-                            className="px-3 py-1.5 bg-rose-500/15 text-rose-300 rounded-lg text-[9px] font-black hover:bg-rose-500/25 border border-rose-500/20 transition-all"
+                            className="px-3 py-1.5 bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-300 rounded-lg text-[9px] font-black hover:bg-rose-500/20 border border-rose-500/20 transition-all"
                           >
                             Hủy
                           </button>

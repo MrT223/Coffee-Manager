@@ -21,13 +21,13 @@ export default function Menu({ currentUser, products, categories, loading, selec
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-3xl font-black text-white tracking-tight">Thực đơn</h2>
-          <p className="text-white/30 text-sm font-medium mt-1">Khám phá các món đặc biệt của Cafe Sýbẩu 67</p>
+          <h2 className="text-3xl font-black  tracking-tight">Thực đơn</h2>
+          <p className="opacity-40 text-sm font-medium mt-1">Khám phá các món đặc biệt của Cafe Sýbẩu 67</p>
         </div>
       </div>
 
       {/* Category tabs */}
-      <div className="flex bg-white/5 p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-fit mb-8 border border-white/5">
+      <div className="flex bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl gap-1 overflow-x-auto max-w-fit mb-8 border border-black/5 dark:border-white/5">
         {categories.map((cat) => (
           <button 
             key={cat.id} 
@@ -35,7 +35,7 @@ export default function Menu({ currentUser, products, categories, loading, selec
             className={`px-5 py-2 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all ${
               selectedCategory === cat.category_name 
                 ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" 
-                : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                : "opacity-40 hover:text-black dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/5"
             }`}
           >
             {cat.category_name}
@@ -61,7 +61,7 @@ export default function Menu({ currentUser, products, categories, loading, selec
             {filteredProducts.map(p => (
               <div 
                 key={p.id} 
-                className="bg-[#1E3932] rounded-3xl border border-white/5 overflow-hidden hover:border-[#00704A]/40 transition-all group hover:shadow-xl hover:shadow-[#00704A]/10"
+                className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden hover:border-[#00704A]/40 transition-all group hover:shadow-xl hover:shadow-[#00704A]/10 shadow-sm"
               >
                 {/* Image */}
                 <div className="relative overflow-hidden aspect-[4/3]">
@@ -79,27 +79,27 @@ export default function Menu({ currentUser, products, categories, loading, selec
                 </div>
 
                 <div className="p-5 pt-3">
-                  <h3 className="font-bold text-white text-[15px] tracking-tight mb-1 line-clamp-1">{p.name}</h3>
+                  <h3 className="font-bold  text-[15px] tracking-tight mb-1 line-clamp-1">{p.name}</h3>
                   <div className="flex items-end justify-between mt-3 gap-2">
                     <div className="min-w-0">
                       {currentUser?.role_id === 2 ? (
                         <div className="flex flex-col">
-                          <span className="text-white/40 line-through text-xs font-semibold">{fmt(p.price)} đ</span>
-                          <div className="text-emerald-400 font-black text-xl truncate">
+                          <span className="opacity-40 line-through text-xs font-semibold">{fmt(p.price)} đ</span>
+                          <div className="text-emerald-500 dark:text-emerald-400 font-black text-xl truncate">
                             {fmt(p.price * 0.8)}
-                            <span className="text-[10px] ml-1 text-emerald-400/50 font-medium">VND</span>
+                            <span className="text-[10px] ml-1 opacity-50 font-medium">VND</span>
                           </div>
                         </div>
                       ) : (
                         <div className="text-[#00704A] font-black text-xl truncate">
                           {fmt(p.price)}
-                          <span className="text-[10px] ml-1 text-white/20 font-medium">VND</span>
+                          <span className="text-[10px] ml-1 opacity-30 font-medium">VND</span>
                         </div>
                       )}
                       {p.quantity === null 
-                        ? <div className="text-[10px] text-emerald-400/50 font-medium mt-0.5">Luôn sẵn sàng</div>
+                        ? <div className="text-[10px] text-emerald-600 dark:text-emerald-400/50 font-medium mt-0.5">Luôn sẵn sàng</div>
                         : p.quantity > 0 
-                          ? <div className="text-[10px] text-white/20 font-medium mt-0.5">Còn {p.quantity} phần</div>
+                          ? <div className="text-[10px] opacity-20 font-medium mt-0.5">Còn {p.quantity} phần</div>
                           : null
                       }
                     </div>

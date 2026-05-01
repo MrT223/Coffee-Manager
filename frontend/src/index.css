@@ -19,15 +19,29 @@
 }
 
 :root {
+  --bg-primary: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #0d1f1b;
+  --border-primary: rgba(0, 0, 0, 0.1);
+  --sidebar-bg: #f8faf9;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.dark {
+  --bg-primary: #0d1f1b;
+  --bg-card: #132a24;
+  --text-primary: #ffffff;
+  --border-primary: rgba(255, 255, 255, 0.1);
+  --sidebar-bg: #1E3932;
 }
 
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0d1f1b;
-  color: #ffffff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Scrollbar dark theme */

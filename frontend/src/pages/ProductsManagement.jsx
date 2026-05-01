@@ -138,7 +138,7 @@ export default function ProductsManagement({ currentUser }) {
     return (
       <div className="flex flex-col items-center py-32 gap-4">
         <Loader2 className="size-10 text-[#00704A] animate-spin" />
-        <span className="text-white/30 text-xs font-black uppercase tracking-widest">Đang tải...</span>
+        <span className="opacity-30 text-xs font-black uppercase tracking-widest">Đang tải...</span>
       </div>
     );
   }
@@ -147,21 +147,21 @@ export default function ProductsManagement({ currentUser }) {
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Quản lý sản phẩm</h1>
-          <p className="text-white/40 text-sm font-medium mt-1">Thêm, sửa, xóa sản phẩm và danh mục</p>
+          <h1 className="text-3xl font-black  tracking-tight">Quản lý sản phẩm</h1>
+          <p className="opacity-40 text-sm font-medium mt-1">Thêm, sửa, xóa sản phẩm và danh mục</p>
         </div>
-        <button onClick={fetchData} className="p-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-          <RefreshCw className="size-4 text-white/50" />
+        <button onClick={fetchData} className="p-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+          <RefreshCw className="size-4 opacity-50" />
         </button>
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex bg-white/5 p-1 rounded-2xl w-fit gap-1 border border-white/5">
-        <button onClick={() => setActiveTab("products")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "products" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
+      <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-2xl w-fit gap-1 border border-black/5 dark:border-white/5">
+        <button onClick={() => setActiveTab("products")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "products" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "opacity-40 hover:text-black dark:hover:text-white/70"}`}>
           <Coffee className="size-3.5" />Sản phẩm ({products.length})
         </button>
         {currentUser?.role_id === 3 && (
-          <button onClick={() => setActiveTab("categories")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "categories" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
+          <button onClick={() => setActiveTab("categories")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "categories" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "opacity-40 hover:text-black dark:hover:text-white/70"}`}>
             <FolderOpen className="size-3.5" />Danh mục ({categories.length})
           </button>
         )}
@@ -176,29 +176,29 @@ export default function ProductsManagement({ currentUser }) {
             </button>
           </div>
 
-          <div className="bg-[#00704A] rounded-3xl border border-white/10 overflow-hidden">
+          <div className="bg-[var(--bg-card)] rounded-3xl border border-black/5 dark:border-white/10 overflow-hidden shadow-sm">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-6">Sản phẩm</th>
-                  <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Danh mục</th>
-                  <th className="text-right text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Giá</th>
-                  <th className="text-center text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Tồn kho</th>
-                  <th className="text-center text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Trạng thái</th>
-                  <th className="text-center text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-6">Thao tác</th>
+                <tr className="border-b border-black/5 dark:border-white/10">
+                  <th className="text-left text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-6">Sản phẩm</th>
+                  <th className="text-left text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-4">Danh mục</th>
+                  <th className="text-right text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-4">Giá</th>
+                  <th className="text-center text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-4">Tồn kho</th>
+                  <th className="text-center text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-4">Trạng thái</th>
+                  <th className="text-center text-[10px] font-bold text-black/30 dark:text-white/40 uppercase tracking-wider py-4 px-6">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-black/5 dark:divide-white/5">
                 {products.map(p => (
-                  <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={p.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                     <td className="py-3 px-6">
                       <div className="flex items-center gap-3">
-                        <img src={p.image_url || "https://via.placeholder.com/40"} className="size-10 rounded-xl object-cover" />
-                        <span className="text-sm font-bold text-white">{p.name}</span>
+                        <img src={p.image_url || "https://via.placeholder.com/40"} className="size-10 rounded-xl object-cover border border-black/5 dark:border-white/5" />
+                        <span className="text-sm font-bold ">{p.name}</span>
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-xs text-white/60 font-medium bg-white/10 px-2.5 py-1 rounded-lg">{getCategoryName(p.category_id)}</span>
+                      <span className="text-xs text-black/60 dark:text-white/40 font-medium bg-black/5 dark:bg-white/10 px-2.5 py-1 rounded-lg">{getCategoryName(p.category_id)}</span>
                     </td>
                     <td className="py-3 px-4 text-right">
                       <span className="text-sm font-black text-amber-300">{fmt(p.price)} đ</span>
@@ -213,11 +213,11 @@ export default function ProductsManagement({ currentUser }) {
                     </td>
                     <td className="py-3 px-6 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => openEditProduct(p)} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
-                          <Pencil className="size-3.5 text-white/50" />
+                        <button onClick={() => openEditProduct(p)} className="p-2 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-xl transition-colors">
+                          <Pencil className="size-3.5 opacity-40" />
                         </button>
                         <button onClick={() => deleteProduct(p.id)} className="p-2 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition-colors">
-                          <Trash2 className="size-3.5 text-rose-400" />
+                          <Trash2 className="size-3.5 text-rose-500 dark:text-rose-400" />
                         </button>
                       </div>
                     </td>
@@ -242,19 +242,19 @@ export default function ProductsManagement({ currentUser }) {
             {categories.map(c => {
               const productCount = products.filter(p => p.category_id === c.id).length;
               return (
-                <div key={c.id} className="bg-[#00704A] rounded-2xl border border-white/10 p-5 flex items-center justify-between hover:border-white/20 transition-all">
+                <div key={c.id} className="bg-[var(--bg-card)] rounded-2xl border border-black/5 dark:border-white/10 p-5 flex items-center justify-between hover:border-black/10 dark:hover:border-white/20 transition-all shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="bg-white/10 p-2.5 rounded-xl">
-                      <Tag className="size-4 text-white/60" />
+                    <div className="bg-black/5 dark:bg-white/10 p-2.5 rounded-xl">
+                      <Tag className="size-4 text-black/40 dark:text-white/60" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">{c.category_name}</h3>
-                      <p className="text-[10px] text-white/40 font-medium">{productCount} sản phẩm</p>
+                      <h3 className="text-sm font-bold ">{c.category_name}</h3>
+                      <p className="text-[10px] opacity-40 font-medium">{productCount} sản phẩm</p>
                     </div>
                   </div>
                   <div className="flex gap-1.5">
-                    <button onClick={() => openEditCategory(c)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-                      <Pencil className="size-3.5 text-white/40" />
+                    <button onClick={() => openEditCategory(c)} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors">
+                      <Pencil className="size-3.5 text-black/30 dark:text-white/40" />
                     </button>
                     <button onClick={() => deleteCategory(c.id)} className="p-2 hover:bg-rose-500/10 rounded-xl transition-colors">
                       <Trash2 className="size-3.5 text-rose-400" />
@@ -272,23 +272,23 @@ export default function ProductsManagement({ currentUser }) {
         {showProductForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowProductForm(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-[#1E3932] rounded-3xl shadow-2xl p-8 w-full max-w-lg border border-white/10 z-10">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-[#1E3932] rounded-3xl shadow-2xl p-8 w-full max-w-lg border border-black/5 dark:border-white/10 z-10">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-black text-white">{editingProduct ? "Sửa sản phẩm" : "Thêm sản phẩm mới"}</h2>
-                <button onClick={() => setShowProductForm(false)} className="p-2 hover:bg-white/10 rounded-full"><X className="size-5 text-white/40" /></button>
+                <h2 className="text-xl font-black ">{editingProduct ? "Sửa sản phẩm" : "Thêm sản phẩm mới"}</h2>
+                <button onClick={() => setShowProductForm(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full"><X className="size-5 text-black/30 dark:text-white/40" /></button>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Tên sản phẩm</label>
-                  <input value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A]" placeholder="Cà phê sữa đá..." />
+                  <label className="text-[10px] text-black/30 dark:text-white/40 font-bold uppercase tracking-wider block mb-1.5">Tên sản phẩm</label>
+                  <input value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} className="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl text-sm  outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" placeholder="Cà phê sữa đá..." />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Giá (VND)</label>
-                    <input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: e.target.value})} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A]" placeholder="25000" />
+                    <label className="text-[10px] text-black/30 dark:text-white/40 font-bold uppercase tracking-wider block mb-1.5">Giá (VND)</label>
+                    <input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: e.target.value})} className="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl text-sm  outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" placeholder="25000" />
                   </div>
                   <div>
-                    <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Quản lý tồn kho</label>
+                    <label className="text-[10px] text-black/30 dark:text-white/40 font-bold uppercase tracking-wider block mb-1.5">Quản lý tồn kho</label>
                     <CustomSelect 
                       value={productForm.quantity === null || productForm.quantity === "" ? "unlimited" : "limited"} 
                       onChange={val => setProductForm({...productForm, quantity: val === "unlimited" ? null : 0})} 
@@ -301,7 +301,7 @@ export default function ProductsManagement({ currentUser }) {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Danh mục</label>
+                    <label className="text-[10px] text-black/30 dark:text-white/40 font-bold uppercase tracking-wider block mb-1.5">Danh mục</label>
                     <CustomSelect 
                       value={productForm.category_id} 
                       onChange={val => setProductForm({...productForm, category_id: val})} 
@@ -312,18 +312,18 @@ export default function ProductsManagement({ currentUser }) {
                   <AnimatePresence>
                     {(productForm.quantity !== null && productForm.quantity !== "") && (
                       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
-                        <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Số lượng hiện có</label>
-                        <input type="number" value={productForm.quantity} onChange={e => setProductForm({...productForm, quantity: e.target.value})} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A]" placeholder="100" />
+                        <label className="text-[10px] text-black/30 dark:text-white/40 font-bold uppercase tracking-wider block mb-1.5">Số lượng hiện có</label>
+                        <input type="number" value={productForm.quantity} onChange={e => setProductForm({...productForm, quantity: e.target.value})} className="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl text-sm  outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" placeholder="100" />
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
                 <div>
-                  <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Hình ảnh</label>
+                  <label className="text-[10px] text-black/30 dark:text-white/40 font-bold uppercase tracking-wider block mb-1.5">Hình ảnh</label>
                   <div className="flex gap-2">
-                    <input value={productForm.image_url} onChange={e => setProductForm({...productForm, image_url: e.target.value})} className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A]" placeholder="Nhập Link URL hoặc Tải lên..." />
-                    <label className="flex-shrink-0 cursor-pointer px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl transition-colors flex items-center justify-center">
-                      {uploadingImage ? <Loader2 className="size-4 animate-spin text-white/40" /> : <span className="text-xs font-bold text-white/80">Tải ảnh lên</span>}
+                    <input value={productForm.image_url} onChange={e => setProductForm({...productForm, image_url: e.target.value})} className="flex-1 px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl text-sm  outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" placeholder="Nhập Link URL hoặc Tải lên..." />
+                    <label className="flex-shrink-0 cursor-pointer px-4 py-2.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 border border-black/10 dark:border-white/10 rounded-xl transition-colors flex items-center justify-center">
+                      {uploadingImage ? <Loader2 className="size-4 animate-spin text-black/30 dark:text-white/40" /> : <span className="text-xs font-bold text-black/60 dark:text-white/80">Tải ảnh lên</span>}
                       <input type="file" className="hidden" accept="image/jpeg, image/png, image/webp" onChange={handleImageUpload} disabled={uploadingImage} />
                     </label>
                   </div>
@@ -343,15 +343,15 @@ export default function ProductsManagement({ currentUser }) {
         {showCategoryForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCategoryForm(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-[#1E3932] rounded-3xl shadow-2xl p-8 w-full max-w-md border border-white/10 z-10">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-[#1E3932] rounded-3xl shadow-2xl p-8 w-full max-w-md border border-black/5 dark:border-white/10 z-10">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-black text-white">{editingCategory ? "Sửa danh mục" : "Thêm danh mục mới"}</h2>
-                <button onClick={() => setShowCategoryForm(false)} className="p-2 hover:bg-white/10 rounded-full"><X className="size-5 text-white/40" /></button>
+                <h2 className="text-xl font-black ">{editingCategory ? "Sửa danh mục" : "Thêm danh mục mới"}</h2>
+                <button onClick={() => setShowCategoryForm(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full"><X className="size-5 text-black/30 dark:text-white/40" /></button>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] text-white/40 font-bold uppercase tracking-wider block mb-1.5">Tên danh mục</label>
-                  <input value={categoryForm.category_name} onChange={e => setCategoryForm({...categoryForm, category_name: e.target.value})} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A]" placeholder="Trà sữa, Cà phê..." />
+                  <label className="text-[10px] text-black/30 dark:text-white/40 font-bold uppercase tracking-wider block mb-1.5">Tên danh mục</label>
+                  <input value={categoryForm.category_name} onChange={e => setCategoryForm({...categoryForm, category_name: e.target.value})} className="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl text-sm  outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" placeholder="Trà sữa, Cà phê..." />
                 </div>
                 <button onClick={saveCategory} disabled={saving} className="w-full py-3 bg-[#00704A] hover:bg-[#00804f] text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#00704A]/20">
                   {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
