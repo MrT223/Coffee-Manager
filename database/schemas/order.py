@@ -14,11 +14,16 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     items: List[OrderDetailCreate]
     user_reward_id: Optional[int] = None
+    channel: str = "ONLINE"
+    staff_id: Optional[int] = None
 
 
 class OrderRead(OrderBase):
     id: int
     total_price: Decimal
+    channel: str = "ONLINE"
+    staff_id: Optional[int] = None
+    staff_username: Optional[str] = None
     order_date: datetime
     updated_at: datetime
     order_details: List[OrderDetailRead] = []

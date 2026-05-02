@@ -142,6 +142,9 @@ CREATE TABLE orders (
     user_id     INT,                                  -- NULL = đơn tại quầy không TK (UC-10)
     total_price NUMERIC(12, 2) NOT NULL CHECK (total_price >= 0),
     status_id   INT            NOT NULL DEFAULT 1,    -- FK → order_statuses (1 = Chờ xác nhận)
+    channel     VARCHAR(10)    NOT NULL DEFAULT 'ONLINE'
+                    CHECK (channel IN ('ONLINE', 'POS')),
+    staff_id    INT,                                  -- Nhân viên tạo đơn POS (NULL = đơn online)
     order_date  TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
 
@@ -150,11 +153,16 @@ CREATE TABLE orders (
         ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT fk_orders_status
         FOREIGN KEY (status_id) REFERENCES order_statuses (id)
-        ON UPDATE CASCADE ON DELETE RESTRICT
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_orders_staff
+        FOREIGN KEY (staff_id) REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE INDEX idx_orders_user_date ON orders (user_id, order_date DESC);
 CREATE INDEX idx_orders_status    ON orders (status_id) WHERE status_id IN (1, 2, 3);
+CREATE INDEX idx_orders_channel   ON orders (channel);
+CREATE INDEX idx_orders_staff     ON orders (staff_id) WHERE staff_id IS NOT NULL;
 
 -- 2.5 ORDER_DETAILS – Chi tiết đơn hàng
 -- UC: UC-07, UC-08, UC-10

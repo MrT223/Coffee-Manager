@@ -1,7 +1,8 @@
 # backend/app/routes/order.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from datetime import date
 
 from database.connection import get_db
 from database.schemas.order import OrderCreate, OrderRead, OrderUpdateStatus
@@ -42,3 +43,50 @@ def update_order_status(order_id: int, status_in: OrderUpdateStatus, db: Session
         if status_in.status_id != 5:
             raise HTTPException(status_code=403, detail="Bạn chỉ có thể hủy đơn hàng")
     return controller_order.update_order_status(db, order_id, status_in.status_id)
+
+
+# ============================================================
+# POS – Các API phục vụ bán hàng tại quầy
+# ============================================================
+
+@router.post("/pos", response_model=OrderRead)
+def create_pos_order(order_in: OrderCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_staff)):
+    """API Tạo đơn hàng POS (Staff/Admin) - Nhân viên bán hàng tại quầy"""
+    order_in.channel = "POS"
+    order_in.staff_id = current_user.id
+    return controller_order.create_order(db, order_in)
+
+@router.get("/pos/latest", response_model=Optional[OrderRead])
+def get_latest_pos_order(db: Session = Depends(get_db)):
+    """API Lấy đơn POS mới nhất đang chờ thanh toán (Máy A polling - KHÔNG CẦN AUTH)"""
+    order = controller_order.get_latest_pos_order(db)
+    return order
+
+@router.put("/pos/{order_id}/confirm", response_model=OrderRead)
+def confirm_pos_payment(order_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_staff)):
+    """API Xác nhận thanh toán đơn POS (Staff)"""
+    return controller_order.confirm_pos_payment(db, order_id)
+
+@router.get("/pos/orders", response_model=List[OrderRead])
+def read_pos_orders(
+    staff_id: Optional[int] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    skip: int = 0, limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff)
+):
+    """API Danh sách đơn POS (Tab Chi tiết đơn hàng)"""
+    return controller_order.get_pos_orders(db, staff_id, date_from, date_to, skip, limit)
+
+@router.get("/report")
+def get_sales_report(
+    staff_id: Optional[int] = None,
+    channel: Optional[str] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff)
+):
+    """API Báo cáo bán hàng (Tab Báo cáo trên POS) - Bộ lọc: Nhân viên, Kênh, Ngày"""
+    return controller_order.get_sales_report(db, staff_id, channel, date_from, date_to)
