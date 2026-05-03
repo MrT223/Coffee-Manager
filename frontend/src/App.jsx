@@ -5,7 +5,7 @@ import axios from "axios";
 import { 
   LayoutDashboard, ShoppingCart, CupSoda, Sandwich, Settings, 
   Users, Search, MapPin, LogOut, Gift, ClipboardList, 
-  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus
+  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus, UserCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, Transition } from '@headlessui/react';
@@ -21,6 +21,7 @@ import ProductsManagement from "./pages/ProductsManagement";
 import Loyalty from "./pages/Loyalty";
 import AdminPanel from "./pages/AdminPanel";
 import RewardsManagement from "./pages/RewardsManagement";
+import Profile from "./pages/Profile";
 
 // Cấu hình Axios Interceptor để tự động gắn Token
 axios.interceptors.request.use((config) => {
@@ -200,6 +201,7 @@ function MainLayout() {
           <SidebarLink icon={Coffee} label="Sản phẩm" path="/products" active={location.pathname === "/products"} onClick={navigate} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
           <SidebarLink icon={Sandwich} label="Thực đơn" path="/menu" active={location.pathname === "/menu" || location.pathname === "/"} onClick={navigate} />
           <SidebarLink icon={Gift} label="Loyalty" path="/loyalty" active={location.pathname === "/loyalty"} onClick={navigate} visible={currentUser?.role_id === 1} />
+          <SidebarLink icon={UserCircle} label="Hồ sơ" path="/profile" active={location.pathname === "/profile"} onClick={navigate} visible={currentUser?.role_id === 1} />
           <SidebarLink icon={Users} label="Tài khoản" path="/admin" active={location.pathname === "/admin"} onClick={navigate} visible={currentUser?.role_id === 3} />
           <SidebarLink icon={Gift} label="Điểm & Quà" path="/admin/rewards" active={location.pathname === "/admin/rewards"} onClick={navigate} visible={currentUser?.role_id === 3} />
         </nav>
@@ -212,10 +214,10 @@ function MainLayout() {
         {/* User info at bottom of sidebar */}
         {currentUser && (
           <div className="mt-4 p-3 bg-white/5 rounded-2xl flex items-center gap-3">
-            <div className="size-9 rounded-xl overflow-hidden flex-shrink-0">
-              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}&background=00704A&color=ffffff&bold=true&size=36`} alt="avatar" className="w-full h-full object-cover" />
+            <div onClick={() => currentUser.role_id === 1 && navigate("/profile")} className={`size-9 rounded-xl overflow-hidden flex-shrink-0 ${currentUser.role_id === 1 ? "cursor-pointer hover:ring-2 ring-[#00704A]/50 transition-all" : ""}`}>
+              <img src={currentUser.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}&background=00704A&color=ffffff&bold=true&size=36`} alt="avatar" className="w-full h-full object-cover" />
             </div>
-            <div className="flex-grow min-w-0">
+            <div onClick={() => currentUser.role_id === 1 && navigate("/profile")} className={`flex-grow min-w-0 ${currentUser.role_id === 1 ? "cursor-pointer" : ""}`}>
               <div className="text-xs font-bold text-white truncate">{currentUser.username}</div>
               <div className="text-[9px] text-[#d4c9a8]/50 font-medium">{currentUser.role_id === 1 ? "Customer" : currentUser.role_id === 2 ? "Staff" : "Admin"}</div>
             </div>
@@ -260,6 +262,7 @@ function MainLayout() {
             <Route path="/orders" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[2]}><OrdersManagement /></ProtectedRoute>} />
             <Route path="/products" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[2, 3]}><ProductsManagement currentUser={currentUser} /></ProtectedRoute>} />
             <Route path="/loyalty" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1]}><Loyalty currentUser={currentUser} /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1]}><Profile currentUser={currentUser} onUserUpdate={setCurrentUser} /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><AdminPanel /></ProtectedRoute>} />
             <Route path="/admin/rewards" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><RewardsManagement /></ProtectedRoute>} />
           </Routes>

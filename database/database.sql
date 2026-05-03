@@ -87,6 +87,7 @@ CREATE TABLE users (
     password     VARCHAR(255) NOT NULL,              -- Bcrypt hash
     role_id      INT          NOT NULL DEFAULT 1,
     total_points INT          NOT NULL DEFAULT 0 CHECK (total_points >= 0),
+    avatar_url   VARCHAR(500),
     is_active    BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
