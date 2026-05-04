@@ -13,6 +13,7 @@ class User(Base):
     password = Column(String(255), nullable=False)  # Bcrypt hash
     role_id = Column(Integer, ForeignKey("roles.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False, default=1)
     total_points = Column(Integer, nullable=False, default=0)
+    avatar_url = Column(String(500), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

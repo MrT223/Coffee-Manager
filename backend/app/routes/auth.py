@@ -40,6 +40,7 @@ def register(req: AuthRequest, db: Session = Depends(get_db)):
             "id": new_user.id,
             "username": new_user.username,
             "role_id": new_user.role_id,
+            "avatar_url": new_user.avatar_url,
         }
     }
 
@@ -60,5 +61,6 @@ def login(req: AuthRequest, db: Session = Depends(get_db)):
             "id": db_user.id,
             "username": db_user.username,
             "role_id": db_user.role_id,
+            "avatar_url": db_user.avatar_url,
         }
     }
