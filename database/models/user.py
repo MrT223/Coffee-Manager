@@ -23,6 +23,7 @@ class User(Base):
 
     # Relationships
     role = relationship("Role", back_populates="users")
-    orders = relationship("Order", back_populates="user")
+    orders = relationship("Order", foreign_keys="[Order.user_id]", back_populates="user")
+    staff_orders = relationship("Order", foreign_keys="[Order.staff_id]", back_populates="staff")
     point_logs = relationship("PointLog", back_populates="user")
     user_rewards = relationship("UserReward", back_populates="user")
