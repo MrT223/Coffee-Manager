@@ -56,3 +56,5 @@ validate_output.txt
 validate_db.py
 docs/
 uploads/
+.agents
+graphify-out

@@ -5,7 +5,7 @@ import axios from "axios";
 import { 
   LayoutDashboard, ShoppingCart, CupSoda, Sandwich, Settings, 
   Users, Search, MapPin, LogOut, Gift, ClipboardList, 
-  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus, UserCircle
+  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus, Monitor
 } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, Transition } from '@headlessui/react';
@@ -22,6 +22,8 @@ import Loyalty from "./pages/Loyalty";
 import AdminPanel from "./pages/AdminPanel";
 import RewardsManagement from "./pages/RewardsManagement";
 import Profile from "./pages/Profile";
+import POSMachine from "./pages/POSMachine";
+import CustomerDisplay from "./pages/CustomerDisplay";
 
 // Cấu hình Axios Interceptor để tự động gắn Token
 axios.interceptors.request.use((config) => {
@@ -204,6 +206,7 @@ function MainLayout() {
           <SidebarLink icon={UserCircle} label="Hồ sơ" path="/profile" active={location.pathname === "/profile"} onClick={navigate} visible={currentUser?.role_id === 1} />
           <SidebarLink icon={Users} label="Tài khoản" path="/admin" active={location.pathname === "/admin"} onClick={navigate} visible={currentUser?.role_id === 3} />
           <SidebarLink icon={Gift} label="Điểm & Quà" path="/admin/rewards" active={location.pathname === "/admin/rewards"} onClick={navigate} visible={currentUser?.role_id === 3} />
+          <SidebarLink icon={Monitor} label="Máy POS" path="/pos" active={false} onClick={() => window.open('/pos', '_blank')} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
         </nav>
 
         {/* Bottom section */}
@@ -344,7 +347,13 @@ export default function App() {
   return (
     <Router>
       <Toaster position="top-right" />
-      <MainLayout />
+      <Routes>
+        {/* POS routes – full-screen, no sidebar */}
+        <Route path="/pos" element={<POSMachine />} />
+        <Route path="/customer-display" element={<CustomerDisplay />} />
+        {/* All other routes – with sidebar layout */}
+        <Route path="/*" element={<MainLayout />} />
+      </Routes>
     </Router>
   );
 }
