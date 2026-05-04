@@ -57,8 +57,19 @@ goto MENU
 echo.
 echo [INIT] Dang tao tables va seed du lieu...
 cd /d "%PROJECT_ROOT%"
+
+:: Activate venv if exists
+if exist ".venv\Scripts\activate.bat" (
+    call .venv\Scripts\activate.bat
+) else if exist "..\.venv\Scripts\activate.bat" (
+    call ..\.venv\Scripts\activate.bat
+)
+
 python -m database.init_db
-if %ERRORLEVEL% neq 0 (
+if %ERRORLEVEL% equ 0 (
+    echo [INFO] Dang chèn dữ liệu mẫu (mock data)...
+    python -m database.seeds.mock_data
+) else (
     echo [ERROR] Init that bai!
 )
 echo.
@@ -70,6 +81,9 @@ goto MENU
 echo.
 echo [RESET] Se XOA TOAN BO du lieu va tao lai!
 cd /d "%PROJECT_ROOT%"
+if exist ".venv\Scripts\activate.bat" (
+    call .venv\Scripts\activate.bat
+)
 python -m database.reset_db
 echo.
 pause
@@ -78,10 +92,16 @@ goto MENU
 :: ------------------------------------------------------------
 :SEED
 echo.
-echo [SEED] Chay seed du lieu (khong xoa tables)...
+echo [SEED] Chay seed du lieu (bao gom mock data)...
 cd /d "%PROJECT_ROOT%"
+if exist ".venv\Scripts\activate.bat" (
+    call .venv\Scripts\activate.bat
+)
 python -m database.seeds.seed
-if %ERRORLEVEL% neq 0 (
+if %ERRORLEVEL% equ 0 (
+    echo [INFO] Dang chèn dữ liệu mẫu (mock data)...
+    python -m database.seeds.mock_data
+) else (
     echo [ERROR] Seed that bai!
 )
 echo.
@@ -92,6 +112,9 @@ goto MENU
 :STATUS
 echo.
 cd /d "%PROJECT_ROOT%"
+if exist ".venv\Scripts\activate.bat" (
+    call .venv\Scripts\activate.bat
+)
 python -m database.status_db
 echo.
 pause

@@ -92,14 +92,18 @@ def seed_products(db: Session):
         
         for p_data in products:
             exists = db.query(Product).filter(Product.name == p_data["name"]).first()
-            if not exists:
+            if exists:
+                exists.price = p_data["price"]
+                exists.quantity = 50
+                exists.image_url = p_data.get("image_url")
+            else:
                 new_product = Product(
                     name=p_data["name"],
                     price=p_data["price"],
                     category_id=cat.id,
                     status_id=status_id,
                     image_url=p_data.get("image_url"),
-                    quantity=0 # Mặc định 0 như trong schema
+                    quantity=50 # Cho phép đặt hàng ngay sau khi seed
                 )
                 db.add(new_product)
     db.commit()
