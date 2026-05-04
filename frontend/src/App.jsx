@@ -207,6 +207,7 @@ function MainLayout() {
           <SidebarLink icon={Users} label="Tài khoản" path="/admin" active={location.pathname === "/admin"} onClick={navigate} visible={currentUser?.role_id === 3} />
           <SidebarLink icon={Gift} label="Điểm & Quà" path="/admin/rewards" active={location.pathname === "/admin/rewards"} onClick={navigate} visible={currentUser?.role_id === 3} />
           <SidebarLink icon={Monitor} label="Máy POS" path="/pos" active={false} onClick={() => window.open('/pos', '_blank')} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
+          <SidebarLink icon={Monitor} label="Màn hình khách" path="/customer-display" active={false} onClick={() => window.open('/customer-display', '_blank')} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
         </nav>
 
         {/* Bottom section */}
