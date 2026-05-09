@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -13,7 +13,10 @@ class User(Base):
     password = Column(String(255), nullable=False)  # Bcrypt hash
     role_id = Column(Integer, ForeignKey("roles.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False, default=1)
     total_points = Column(Integer, nullable=False, default=0)
-    avatar_url = Column(String(500), nullable=True)
+    birthday = Column(Date, nullable=True)
+    last_birthday_wish_year = Column(Integer, nullable=True)
+    birthday_locked = Column(Boolean, nullable=False, default=False)
+    avatar_url = Column(String(255), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 import os
 import uuid
@@ -15,6 +15,7 @@ from database.models.user import User
 from database.models.order import Order
 from database.models.order_detail import OrderDetail
 from database.models.product import Product
+from database.schemas.user import UserBase
 from app.dependencies import get_current_user
 from app import security
 
@@ -26,6 +27,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 # ── Schemas ──────────────────────────────────────────────
+class ProfileUpdate(BaseModel):
+    birthday: Optional[date] = None
+
+
 class ProfileRead(BaseModel):
     id: int
     username: str
@@ -37,6 +42,9 @@ class ProfileRead(BaseModel):
     avatar_url: Optional[str] = None
     total_orders: int = 0
     total_spent: float = 0.0
+    birthday: Optional[date] = None
+    birthday_locked: bool = False
+    should_show_birthday_modal: bool = False
 
     class Config:
         from_attributes = True
@@ -87,6 +95,24 @@ def get_my_profile(
     )
     total_spent = sum(float(o.total_price) for o in total_spent_row)
 
+    # Check for birthday reward and flag
+    should_show_birthday_modal = False
+    today = datetime.utcnow().date()
+    
+    if current_user.birthday:
+        # Trigger issuance (it checks internally if already issued)
+        from app.controllers import birthday as birthday_controller
+        birthday_controller.issue_birthday_voucher(db, current_user)
+        
+        # Check if today is birthday (always show modal on that day)
+        if current_user.birthday.month == today.month and \
+           current_user.birthday.day == today.day:
+            
+            should_show_birthday_modal = True
+            # Update last_birthday_wish_year anyway for record, but don't use it to block the modal
+            current_user.last_birthday_wish_year = today.year
+            db.commit()
+
     return ProfileRead(
         id=current_user.id,
         username=current_user.username,
@@ -95,10 +121,29 @@ def get_my_profile(
         is_active=current_user.is_active,
         created_at=current_user.created_at,
         updated_at=current_user.updated_at,
-        avatar_url=current_user.avatar_url,
+        birthday=current_user.birthday,
+        birthday_locked=current_user.birthday_locked,
         total_orders=total_orders,
         total_spent=total_spent,
+        should_show_birthday_modal=should_show_birthday_modal,
     )
+
+
+@router.put("/me", response_model=ProfileRead)
+def update_profile(
+    payload: ProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Cập nhật thông tin cá nhân (đặc biệt là ngày sinh)"""
+    if payload.birthday: # Bỏ qua kiểm tra locked để bạn test thoải mái
+        current_user.birthday = payload.birthday
+        # current_user.birthday_locked = True # Tạm thời tắt khóa để bạn test hiệu ứng
+        current_user.last_birthday_wish_year = None # Reset để có thể xem lại hiệu ứng ngay lập tức
+    
+    db.commit()
+    db.refresh(current_user)
+    return get_my_profile(db, current_user)
 
 
 @router.post("/avatar")

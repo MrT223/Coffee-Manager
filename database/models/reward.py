@@ -21,7 +21,7 @@ class Reward(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     __table_args__ = (
-        CheckConstraint("points_required > 0", name="chk_rewards_points"),
+        CheckConstraint("points_required >= 0", name="chk_rewards_points"),
         CheckConstraint("discount_value >= 0", name="chk_rewards_discount"),
     )
 

@@ -12,6 +12,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Toaster, toast } from 'react-hot-toast';
 
 import AuthModal from "./components/AuthModal";
+import BirthdayModal from "./components/BirthdayModal";
 import Menu from "./pages/Menu";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -45,7 +46,7 @@ const SidebarLink = ({ icon: Icon, label, path, active, onClick, visible = true 
 };
 
 // Route guard: chỉ cho phép truy cập nếu user có role phù hợp
-const ProtectedRoute = ({ currentUser, allowedRoles, children }) => {
+const ProtectedRoute = ({ currentUser, allowedRoles = [1, 2, 3], children }) => {
   if (!currentUser || !allowedRoles.includes(currentUser.role_id)) {
     return <Navigate to="/menu" replace />;
   }
@@ -62,6 +63,7 @@ function MainLayout() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [showBirthdayModal, setShowBirthdayModal] = useState(false);
   
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -77,6 +79,35 @@ function MainLayout() {
   useEffect(() => { cartRef.current = cart; }, [cart]);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    const fetchProfileAndReward = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const cfg = { headers: { Authorization: `Bearer ${token}` } };
+        // Fetch full profile (including birthday and notification flags)
+        const profileRes = await axios.get("http://127.0.0.1:8000/api/profile/me", cfg);
+        const profile = profileRes.data;
+        
+        // Update currentUser state with new data
+        setCurrentUser(prev => ({ 
+          ...prev, 
+          birthday: profile.birthday,
+          birthday_locked: profile.birthday_locked,
+          total_points: profile.total_points
+        }));
+
+        // Trigger birthday modal if flag is set
+        if (profile.should_show_birthday_modal) {
+          setTimeout(() => setShowBirthdayModal(true), 1000); // Delay for a better entrance
+        }
+      } catch (e) {
+        console.error("Lỗi đồng bộ profile:", e);
+      }
+    };
+    fetchProfileAndReward();
+  }, [currentUser?.id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -204,17 +235,13 @@ function MainLayout() {
           <SidebarLink icon={Coffee} label="Sản phẩm" path="/products" active={location.pathname === "/products"} onClick={navigate} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
           <SidebarLink icon={Sandwich} label="Thực đơn" path="/menu" active={location.pathname === "/menu" || location.pathname === "/"} onClick={navigate} />
           <SidebarLink icon={Gift} label="Loyalty" path="/loyalty" active={location.pathname === "/loyalty"} onClick={navigate} visible={currentUser?.role_id === 1} />
-          <SidebarLink icon={UserCircle} label="Hồ sơ" path="/profile" active={location.pathname === "/profile"} onClick={navigate} visible={currentUser?.role_id === 1} />
+          <SidebarLink icon={UserCircle} label="Hồ sơ" path="/profile" active={location.pathname === "/profile"} onClick={navigate} visible={!!currentUser} />
           <SidebarLink icon={Users} label="Tài khoản" path="/admin" active={location.pathname === "/admin"} onClick={navigate} visible={currentUser?.role_id === 3} />
           <SidebarLink icon={Gift} label="Điểm & Quà" path="/admin/rewards" active={location.pathname === "/admin/rewards"} onClick={navigate} visible={currentUser?.role_id === 3} />
           <SidebarLink icon={Monitor} label="Máy POS" path="/pos" active={false} onClick={() => window.open('/pos', '_blank')} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
           <SidebarLink icon={Monitor} label="Màn hình khách" path="/customer-display" active={false} onClick={() => window.open('/customer-display', '_blank')} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
         </nav>
 
-        {/* Bottom section */}
-        <div className="pt-4 border-t border-white/5 space-y-1">
-          <SidebarLink icon={Settings} label="Cài đặt" path="/settings" active={location.pathname === "/settings"} onClick={navigate} />
-        </div>
 
         {/* User info at bottom of sidebar */}
         {currentUser && (
@@ -287,7 +314,7 @@ function MainLayout() {
             <Route path="/orders" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[2]}><OrdersManagement /></ProtectedRoute>} />
             <Route path="/products" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[2, 3]}><ProductsManagement currentUser={currentUser} /></ProtectedRoute>} />
             <Route path="/loyalty" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1]}><Loyalty currentUser={currentUser} /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1]}><Profile currentUser={currentUser} onUserUpdate={setCurrentUser} /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute currentUser={currentUser}><Profile currentUser={currentUser} onUserUpdate={setCurrentUser} /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><AdminPanel /></ProtectedRoute>} />
             <Route path="/admin/rewards" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><RewardsManagement /></ProtectedRoute>} />
           </Routes>
@@ -361,6 +388,7 @@ function MainLayout() {
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLoginSuccess={(u) => setCurrentUser(u)} />
+      <BirthdayModal isOpen={showBirthdayModal} onClose={() => setShowBirthdayModal(false)} username={currentUser?.username} />
     </div>
   );
 }
