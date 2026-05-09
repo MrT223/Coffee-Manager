@@ -60,6 +60,7 @@ function MainLayout() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
   const [currentUser, setCurrentUser] = useState(() => {
@@ -238,7 +239,27 @@ function MainLayout() {
         <header className="bg-[#1E3932]/80 backdrop-blur-xl p-4 px-8 border-b border-white/5 flex items-center sticky top-0 z-20 justify-between">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-white/30" />
-            <input type="text" placeholder="Tìm kiếm món uống..." className="w-full pl-11 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-xs text-white placeholder-white/30 outline-none focus:bg-white/10 focus:border-[#00704A]/50 transition-all" />
+            <input 
+              type="text" 
+              placeholder="Tìm kiếm món uống, danh mục..." 
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                // Tự động chuyển về trang Menu khi gõ tìm kiếm từ trang khác
+                if (e.target.value.trim() && location.pathname !== "/" && location.pathname !== "/menu") {
+                  navigate("/menu");
+                }
+              }}
+              className="w-full pl-11 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-xs text-white placeholder-white/30 outline-none focus:bg-white/10 focus:border-[#00704A]/50 transition-all" 
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="size-3.5 text-white/40" />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -258,8 +279,8 @@ function MainLayout() {
         {/* Main content area */}
         <main className={`flex-1 p-6 lg:p-8 ${cart.length > 0 && (location.pathname === "/" || location.pathname.includes("/menu")) ? 'pb-40' : 'pb-6'}`}>
           <Routes>
-            <Route path="/" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} />} />
-            <Route path="/menu" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} />} />
+            <Route path="/" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
+            <Route path="/menu" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
             <Route path="/cart" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1, 2]}><Cart cart={cart} removeFromCart={removeFromCart} cartTotal={cartTotal} updateQty={updateQty} currentUser={currentUser} onRequireAuth={requireCustomerAuth} /></ProtectedRoute>} />
             <Route path="/checkout" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1, 2]}><Checkout cart={cart} cartTotal={cartTotal} onCompleteOrder={() => setCart([])} currentUser={currentUser} /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><Dashboard /></ProtectedRoute>} />
