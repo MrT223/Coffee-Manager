@@ -22,8 +22,13 @@ def reset_db():
     Base.metadata.create_all(bind=engine)
     print("Da tao lai xong.")
 
-    print("\nDang seed du lieu...")
+    print("\nDang seed du lieu lookup...")
     run_seed()
+
+    print("\nDang nap du lieu mau (users, products, rewards)...")
+    from database.seeds.mock_data import run_mock_seed
+    run_mock_seed()
+
     print("\nReset hoan tat!")
 
 

@@ -1,10 +1,10 @@
 // src/pages/Profile.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   User, ShoppingBag, Star, Calendar, Shield,
   Loader2, Lock, Eye, EyeOff, ChevronDown, ChevronUp,
   Package, Clock, CheckCircle2, XCircle, Truck,
-  Coffee, ArrowUpRight, Hash, Receipt, Camera
+  Coffee, ArrowUpRight, Hash, Receipt, Camera, PartyPopper, Cake
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -250,6 +250,7 @@ export default function Profile({ currentUser, onUserUpdate }) {
   const [activeTab, setActiveTab] = useState("orders");
   const [showPwModal, setShowPwModal] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const birthdayInputRef = useRef(null);
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -304,6 +305,26 @@ export default function Profile({ currentUser, onUserUpdate }) {
       toast.error(err.response?.data?.detail || "Không thể upload ảnh");
     } finally {
       setUploadingAvatar(false);
+    }
+  };
+
+  const handleSetBirthday = async (birthday) => {
+    try {
+      const res = await axios.put(`${API}/profile/me`, { birthday });
+      const updatedProfile = res.data;
+      setProfile(updatedProfile);
+      
+      const updatedUser = { 
+        ...currentUser, 
+        birthday: updatedProfile.birthday, 
+        birthday_locked: updatedProfile.birthday_locked 
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      if (onUserUpdate) onUserUpdate(updatedUser);
+      
+      toast.success("Đã thiết lập ngày sinh! Bạn sẽ nhận được quà vào ngày này hàng năm.");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Không thể thiết lập ngày sinh");
     }
   };
 
@@ -393,6 +414,34 @@ export default function Profile({ currentUser, onUserUpdate }) {
                 <Shield className="size-3" />
                 {currentUser.role_id === 1 ? "Khách hàng" : currentUser.role_id === 2 ? "Nhân viên" : "Quản trị viên"}
               </span>
+              
+              {profile?.birthday && (
+                <span className="text-[10px] text-white/50 flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+                  <Cake className="size-3.5 text-[#00704A]" />
+                  <span className="font-medium">Sinh nhật: {fmtDate(profile.birthday)}</span>
+                </span>
+              )}
+              
+              {!profile?.birthday_locked && (
+                <div className="flex items-center gap-2">
+                  <input 
+                    ref={birthdayInputRef}
+                    type="date" 
+                    onChange={(e) => e.target.value && handleSetBirthday(e.target.value)}
+                    className="absolute opacity-0 pointer-events-none w-0 h-0"
+                  />
+                  <button
+                    onClick={() => birthdayInputRef.current?.showPicker ? birthdayInputRef.current.showPicker() : birthdayInputRef.current?.click()}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-[#00704A]/10 hover:bg-[#00704A]/20 border border-[#00704A]/30 rounded-lg transition-all group"
+                  >
+                    <Cake className="size-3.5 text-[#00704A] group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] text-[#00704A] font-black uppercase tracking-tight">
+                      {profile?.birthday ? "Đổi ngày sinh" : "Thiết lập ngày sinh"}
+                    </span>
+                  </button>
+                </div>
+              )}
+
               <span className="text-[10px] text-white/30 flex items-center gap-1">
                 <Calendar className="size-3" />
                 Thành viên từ {memberSince}

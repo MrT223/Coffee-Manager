@@ -7,7 +7,7 @@ from decimal import Decimal
 class RewardBase(BaseModel):
     name: str = Field(..., max_length=200)
     description: Optional[str] = None
-    points_required: int = Field(..., gt=0)
+    points_required: int = Field(..., ge=0)
     reward_type_id: int
     discount_value: Optional[Decimal] = Field(None, ge=0)
     quantity: Optional[int] = None

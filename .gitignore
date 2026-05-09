@@ -60,3 +60,5 @@ docs/
 uploads/
 .agents
 graphify-out
+.claude
+skills-lock.json
