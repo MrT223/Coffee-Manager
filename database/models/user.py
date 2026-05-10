@@ -16,18 +16,23 @@ class User(Base):
     birthday = Column(Date, nullable=True)
     last_birthday_wish_year = Column(Integer, nullable=True)
     birthday_locked = Column(Boolean, nullable=False, default=False)
-    avatar_url = Column(String(255), nullable=True)
+    total_exp = Column(Integer, nullable=False, default=0)
+    tier_id = Column(Integer, ForeignKey("member_tiers.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False, default=1)
+    avatar_url = Column(String(500), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     __table_args__ = (
         CheckConstraint("total_points >= 0", name="chk_users_total_points"),
+        CheckConstraint("total_exp >= 0", name="chk_users_total_exp"),
     )
 
     # Relationships
     role = relationship("Role", back_populates="users")
+    tier = relationship("MemberTier", back_populates="users")
     orders = relationship("Order", foreign_keys="[Order.user_id]", back_populates="user")
     staff_orders = relationship("Order", foreign_keys="[Order.staff_id]", back_populates="staff")
     point_logs = relationship("PointLog", back_populates="user")
     user_rewards = relationship("UserReward", back_populates="user")
+

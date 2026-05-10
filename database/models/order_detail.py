@@ -12,6 +12,7 @@ class OrderDetail(Base):
     product_id = Column(Integer, ForeignKey("products.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False)
     quantity = Column(Integer, nullable=False)
     price_at_time = Column(Numeric(12, 2), nullable=False)
+    combo_id = Column(Integer, ForeignKey("combos.id", onupdate="CASCADE", ondelete="SET NULL"), nullable=True)
 
     __table_args__ = (
         CheckConstraint("quantity > 0", name="chk_od_quantity"),
@@ -21,3 +22,5 @@ class OrderDetail(Base):
     # Relationships
     order = relationship("Order", back_populates="order_details")
     product = relationship("Product", back_populates="order_details")
+    combo = relationship("Combo")
+

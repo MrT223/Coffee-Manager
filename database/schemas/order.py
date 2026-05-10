@@ -6,13 +6,20 @@ from decimal import Decimal
 from database.schemas.order_detail import OrderDetailCreate, OrderDetailRead
 
 
+class ComboOrderItem(BaseModel):
+    """Item combo trong đơn hàng – frontend gửi combo_id + quantity"""
+    combo_id: int
+    quantity: int = Field(1, gt=0)
+
+
 class OrderBase(BaseModel):
     user_id: Optional[int] = None
     status_id: int = 1
 
 
 class OrderCreate(OrderBase):
-    items: List[OrderDetailCreate]
+    items: List[OrderDetailCreate] = []
+    combo_items: List[ComboOrderItem] = []  # Danh sách combo được thêm
     user_reward_id: Optional[int] = None
     channel: str = "ONLINE"
     staff_id: Optional[int] = None
@@ -34,3 +41,4 @@ class OrderRead(OrderBase):
 
 class OrderUpdateStatus(BaseModel):
     status_id: int
+
