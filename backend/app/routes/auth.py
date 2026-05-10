@@ -32,7 +32,18 @@ def register(req: AuthRequest, db: Session = Depends(get_db)):
     # Tạo Token
     access_token = security.create_access_token(data={"sub": new_user.username})
     
-    # FIX QUAN TRỌNG: Trả về cục "user" chứa chính xác "id"
+    tier_data = None
+    if new_user.tier:
+        tier_data = {
+            "id": new_user.tier.id,
+            "tier_name": new_user.tier.tier_name,
+            "tier_order": new_user.tier.tier_order,
+            "exp_required": new_user.tier.exp_required,
+            "discount_percent": float(new_user.tier.discount_percent),
+            "color": new_user.tier.color,
+            "icon": new_user.tier.icon
+        }
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -41,6 +52,8 @@ def register(req: AuthRequest, db: Session = Depends(get_db)):
             "username": new_user.username,
             "role_id": new_user.role_id,
             "avatar_url": new_user.avatar_url,
+            "total_points": new_user.total_points,
+            "tier": tier_data
         }
     }
 
@@ -53,7 +66,18 @@ def login(req: AuthRequest, db: Session = Depends(get_db)):
     
     access_token = security.create_access_token(data={"sub": db_user.username})
     
-    # FIX QUAN TRỌNG: Trả về cục "user" chứa chính xác "id" cho Frontend
+    tier_data = None
+    if db_user.tier:
+        tier_data = {
+            "id": db_user.tier.id,
+            "tier_name": db_user.tier.tier_name,
+            "tier_order": db_user.tier.tier_order,
+            "exp_required": db_user.tier.exp_required,
+            "discount_percent": float(db_user.tier.discount_percent),
+            "color": db_user.tier.color,
+            "icon": db_user.tier.icon
+        }
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -62,5 +86,7 @@ def login(req: AuthRequest, db: Session = Depends(get_db)):
             "username": db_user.username,
             "role_id": db_user.role_id,
             "avatar_url": db_user.avatar_url,
+            "total_points": db_user.total_points,
+            "tier": tier_data
         }
     }

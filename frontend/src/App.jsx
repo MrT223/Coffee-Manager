@@ -95,7 +95,8 @@ function MainLayout() {
           ...prev, 
           birthday: profile.birthday,
           birthday_locked: profile.birthday_locked,
-          total_points: profile.total_points
+          total_points: profile.total_points,
+          tier: profile.tier
         }));
 
         // Trigger birthday modal if flag is set
@@ -113,16 +114,38 @@ function MainLayout() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, catRes, comboRes] = await Promise.all([
           axios.get("http://127.0.0.1:8000/api/products/"),
-          axios.get("http://127.0.0.1:8000/api/categories/")
+          axios.get("http://127.0.0.1:8000/api/categories/"),
+          axios.get("http://127.0.0.1:8000/api/combos/?active_only=true")
         ]);
         const freshProducts = prodRes.data || [];
-        setProducts(freshProducts.map(p => {
+        const combos = comboRes.data || [];
+        
+        // Map combos to look like products
+        const combosMapped = combos.map(c => ({
+          id: `combo_${c.id}`, // String ID để phân biệt
+          combo_id: c.id,
+          name: c.name,
+          price: c.final_price,
+          original_price: c.original_price,
+          image_url: c.image_url,
+          category_id: "combo_cat",
+          is_combo: true,
+          combo_items: c.items,
+          quantity: null // Không quản lý tồn kho cứng ở level combo
+        }));
+
+        setProducts([...combosMapped, ...freshProducts.map(p => {
           const cartItem = cartRef.current.find(item => item.id === p.id);
           return cartItem && p.quantity !== null ? { ...p, quantity: p.quantity - cartItem.qty } : p;
-        }));
-        setCategories([{ id: 0, category_name: "All" }, ...(catRes.data || [])]);
+        })]);
+        
+        setCategories([
+          { id: 0, category_name: "All" }, 
+          { id: "combo_cat", category_name: "Combo đặc biệt" },
+          ...(catRes.data || [])
+        ]);
       } catch (error) { console.error("Lỗi API:", error); } finally { setLoading(false); }
     };
     fetchData();

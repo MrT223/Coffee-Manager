@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Gift, Percent, Loader2, Save, RefreshCw, Plus, Pencil, Trash2, X
+  Gift, Percent, Loader2, Save, RefreshCw, Plus, Pencil, Trash2, X, Crown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -12,7 +12,7 @@ const API = "http://127.0.0.1:8000/api";
 const EMPTY_REWARD = { name: "", description: "", points_required: "", reward_type_id: 1, discount_value: "", image_url: "", quantity: "", is_active: true };
 
 export default function RewardsManagement() {
-  const [activeTab, setActiveTab] = useState("rewards");
+  const [activeTab, setActiveTab] = useState("tiers");
   
   // States for Rewards
   const [rewards, setRewards] = useState([]);
@@ -28,14 +28,21 @@ export default function RewardsManagement() {
   const [newRate, setNewRate] = useState("");
   const [savingConfig, setSavingConfig] = useState(false);
 
+  // States for Tiers
+  const [tiers, setTiers] = useState([]);
+  const [editingTier, setEditingTier] = useState(null);
+  const [tierForm, setTierForm] = useState({ exp_required: "", discount_percent: "" });
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [rewardsRes, configRes] = await Promise.all([
+      const [rewardsRes, configRes, tiersRes] = await Promise.all([
         axios.get(`${API}/rewards/`),
         axios.get(`${API}/loyalty/config`).catch(() => ({ data: null })),
+        axios.get(`${API}/loyalty/tiers`)
       ]);
       setRewards(rewardsRes.data || []);
+      setTiers(tiersRes.data || []);
       if (configRes.data) {
         setConfig(configRes.data);
         setNewRate(String(parseFloat(configRes.data.earning_rate) * 100));
@@ -61,6 +68,20 @@ export default function RewardsManagement() {
       toast.error(err.response?.data?.detail || "Lỗi cập nhật"); 
     } finally { 
       setSavingConfig(false); 
+    }
+  };
+
+  const saveTier = async (tierId) => {
+    try {
+      await axios.put(`${API}/loyalty/tiers/${tierId}`, {
+        exp_required: parseInt(tierForm.exp_required),
+        discount_percent: parseFloat(tierForm.discount_percent)
+      });
+      toast.success("Cập nhật hạng thành công!");
+      setEditingTier(null);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Lỗi cập nhật hạng");
     }
   };
 
@@ -173,8 +194,8 @@ export default function RewardsManagement() {
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Quản lý điểm & Quà tặng</h1>
-          <p className="text-white/40 text-sm font-medium mt-1">Cấu hình tích điểm và quản lý danh mục phần thưởng</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">Quản lý Chương trình Loyalty</h1>
+          <p className="text-white/40 text-sm font-medium mt-1">Cấu hình Hạng, Điểm và Quà tặng khách hàng</p>
         </div>
         <button onClick={fetchData} className="p-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
           <RefreshCw className="size-4 text-white/50" />
@@ -183,6 +204,9 @@ export default function RewardsManagement() {
 
       {/* Tabs */}
       <div className="flex bg-white/5 p-1 rounded-2xl w-fit gap-1 border border-white/5">
+        <button onClick={() => setActiveTab("tiers")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "tiers" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
+          <Crown className="size-3.5" />Hạng Thành Viên
+        </button>
         <button onClick={() => setActiveTab("rewards")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "rewards" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
           <Gift className="size-3.5" />Quà tặng ({rewards.length})
         </button>
@@ -190,6 +214,70 @@ export default function RewardsManagement() {
           <Percent className="size-3.5" />Cấu hình tích điểm
         </button>
       </div>
+
+      {/* TAB HẠNG THÀNH VIÊN */}
+      {activeTab === "tiers" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {tiers.map(t => {
+            const isEditing = editingTier === t.id;
+            return (
+              <div key={t.id} className="bg-[#1E3932] rounded-3xl border border-white/10 p-6 flex flex-col relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl pointer-events-none">{t.icon}</div>
+                <div className="flex items-center gap-3 mb-6 relative z-10">
+                  <div className="size-12 rounded-full flex items-center justify-center text-2xl shadow-lg border border-white/20" style={{ backgroundColor: t.color }}>
+                    {t.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-white" style={{ color: t.color }}>{t.tier_name}</h3>
+                    <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold">Cấp {t.tier_order}</p>
+                  </div>
+                </div>
+
+                {isEditing ? (
+                  <div className="space-y-4 relative z-10 flex-grow">
+                    <div>
+                      <label className="text-[10px] text-white/40 font-bold uppercase tracking-widest block mb-1">EXP Yêu cầu</label>
+                      <input 
+                        type="number" value={tierForm.exp_required} onChange={e => setTierForm({...tierForm, exp_required: e.target.value})}
+                        className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-sm text-white focus:border-[#00704A] outline-none"
+                        disabled={t.tier_order === 1} // Rank 1 is always 0
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-white/40 font-bold uppercase tracking-widest block mb-1">Chiết khấu (%)</label>
+                      <input 
+                        type="number" step="0.1" value={tierForm.discount_percent} onChange={e => setTierForm({...tierForm, discount_percent: e.target.value})}
+                        className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-sm text-white focus:border-[#00704A] outline-none"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <button onClick={() => setEditingTier(null)} className="flex-1 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-white transition-colors">Hủy</button>
+                      <button onClick={() => saveTier(t.id)} className="flex-1 py-2 bg-[#00704A] hover:bg-[#00804f] rounded-xl text-xs font-black text-white transition-colors">Lưu</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4 relative z-10 flex-grow">
+                    <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
+                      <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-1">EXP Yêu cầu</div>
+                      <div className="text-xl font-black text-white">{fmt(t.exp_required)}</div>
+                    </div>
+                    <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
+                      <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-1">Chiết khấu giảm giá</div>
+                      <div className="text-xl font-black text-emerald-400">{t.discount_percent}%</div>
+                    </div>
+                    <button 
+                      onClick={() => { setEditingTier(t.id); setTierForm({ exp_required: t.exp_required, discount_percent: t.discount_percent }); }}
+                      className="w-full mt-2 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Pencil className="size-3.5" /> Chỉnh sửa
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </motion.div>
+      )}
 
       {/* TAB TRANG QUẢN TRỊ QUÀ TẶNG */}
       {activeTab === "rewards" && (
@@ -312,9 +400,9 @@ export default function RewardsManagement() {
       {/* MODAL FORM REWARDS */}
       <AnimatePresence>
         {showRewardForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowRewardForm(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-[#1E3932] rounded-3xl shadow-2xl p-8 w-full max-w-md border border-white/10 z-10">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-[#1E3932] rounded-3xl shadow-2xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto border border-white/10 z-10 custom-scrollbar">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-black text-white">{editingReward ? "Sửa phân thưởng" : "Thêm phần thưởng mới"}</h2>
                 <button onClick={() => setShowRewardForm(false)} className="p-2 hover:bg-white/10 rounded-full"><X className="size-5 text-white/40" /></button>

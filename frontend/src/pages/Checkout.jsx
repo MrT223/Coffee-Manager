@@ -22,11 +22,14 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
     }
   }, [currentUser]);
 
+  const tierDiscountPercent = currentUser?.tier?.discount_percent ? parseFloat(currentUser.tier.discount_percent) : 0;
+  const tierDiscountAmount = (cartTotal * tierDiscountPercent) / 100;
+
   const discountAmount = selectedReward && selectedReward.reward?.reward_type_id === 2 
     ? parseFloat(selectedReward.reward.discount_value || 0) 
     : 0;
   
-  const finalTotal = Math.max(cartTotal - discountAmount, 0);
+  const finalTotal = Math.max(cartTotal - tierDiscountAmount - discountAmount, 0);
 
   const handleOrder = async () => {
     if (!currentUser || !currentUser.id) {
@@ -42,8 +45,12 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
     try {
       const orderPayload = {
         user_id: currentUser.id, 
-        items: cart.map(item => ({
+        items: cart.filter(item => !item.is_combo).map(item => ({
           product_id: item.id,
+          quantity: item.qty
+        })),
+        combo_items: cart.filter(item => item.is_combo).map(item => ({
+          combo_id: item.combo_id,
           quantity: item.qty
         })),
         user_reward_id: selectedReward ? selectedReward.id : null
@@ -134,7 +141,7 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
             <span className="text-white min-w-0 text-right">
               {new Intl.NumberFormat('vi-VN').format(cartTotal)} đ
               {currentUser?.role_id === 2 && (
-                 <span className="block text-[9px] text-emerald-400/80 uppercase mt-1">Đã áp dụng giảm 20% NV</span>
+                 <span className="block text-[9px] text-emerald-400/80 uppercase mt-1">Đã áp dụng giảm 20% NV vào giá món</span>
               )}
             </span>
           </div>
@@ -142,6 +149,12 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
             <span className="text-white/40 uppercase tracking-wider flex-shrink-0">Phí dịch vụ:</span>
             <span className="text-white">MIỄN PHÍ</span>
           </div>
+          {tierDiscountAmount > 0 && (
+            <div className="flex justify-between text-xs font-bold gap-4">
+              <span className="text-emerald-400 uppercase tracking-wider flex-shrink-0">Ưu đãi hạng {currentUser?.tier?.tier_name}:</span>
+              <span className="text-emerald-400">- {new Intl.NumberFormat('vi-VN').format(tierDiscountAmount)} đ</span>
+            </div>
+          )}
           {discountAmount > 0 && (
             <div className="flex justify-between text-xs font-bold gap-4">
               <span className="text-emerald-400 uppercase tracking-wider flex-shrink-0 flex items-center gap-1.5"><Ticket className="size-3" /> Ưu đãi áp dụng:</span>

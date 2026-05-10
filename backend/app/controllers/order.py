@@ -8,31 +8,37 @@ from database.schemas.order import OrderCreate
 from app.controllers import product as controller_product
 from fastapi import HTTPException
 from app.controllers import loyalty as controller_loyalty
+from database.models.combo import Combo
 from database.models.user_reward import UserReward
 from database.models.user import User
 from decimal import Decimal
 from datetime import date, timedelta
+from app.controllers.combo import _calc_combo_prices
 
 def create_order(db: Session, order_in: OrderCreate):
     # 1. Kiểm tra kho và tính tổng tiền thực tế từ DB
     is_staff = False
+    tier_discount_percent = Decimal('0')
+    user = None
     if order_in.user_id:
         user = db.query(User).filter(User.id == order_in.user_id).first()
-        if user and user.role_id == 2:
-            is_staff = True
+        if user:
+            if user.role_id == 2:
+                is_staff = True
+            if user.tier and user.tier.discount_percent > 0:
+                tier_discount_percent = Decimal(str(user.tier.discount_percent))
 
     total_price = Decimal('0')
     items_to_create = []
     
+    # Xử lý sản phẩm lẻ
     for item in order_in.items:
         product = db.query(Product).filter(Product.id == item.product_id, Product.is_deleted == False).first()
         if not product:
             raise HTTPException(status_code=404, detail=f"Sản phẩm ID {item.product_id} không tồn tại")
         
-        # Kiểm tra tồn kho (đã bao gồm việc kiểm tra quantity >= item.quantity)
         if product.quantity is not None and product.quantity < item.quantity:
             raise HTTPException(status_code=400, detail=f"Sản phẩm {product.name} đã hết hàng hoặc không đủ số lượng")
-        
         
         calc_price = product.price
         if is_staff:
@@ -45,8 +51,56 @@ def create_order(db: Session, order_in: OrderCreate):
             "product_id": product.id,
             "quantity": item.quantity,
             "price_at_time": calc_price,
+            "combo_id": None,
             "product_obj": product
         })
+
+    # Xử lý combo
+    for c_item in order_in.combo_items:
+        combo = db.query(Combo).filter(Combo.id == c_item.combo_id, Combo.is_active == True).first()
+        if not combo:
+            raise HTTPException(status_code=404, detail=f"Combo ID {c_item.combo_id} không tồn tại hoặc đã ngừng bán")
+        
+        # Tính giá 1 combo
+        _, final_combo_price, combo_details = _calc_combo_prices(combo, db)
+        
+        combo_total = final_combo_price * c_item.quantity
+        total_price += combo_total
+        
+        # Thêm các sản phẩm của combo vào order details
+        for detail in combo_details:
+            product = db.query(Product).filter(Product.id == detail.product_id).first()
+            if not product:
+                raise HTTPException(status_code=400, detail=f"Sản phẩm trong combo bị lỗi")
+                
+            qty_needed = detail.quantity * c_item.quantity
+            if product.quantity is not None and product.quantity < qty_needed:
+                raise HTTPException(status_code=400, detail=f"Sản phẩm {product.name} trong combo không đủ số lượng")
+            
+            # Lưu giá là 0 vì giá được gộp vào 1 item đại diện, nhưng để đúng logic thì ta chia đều hoặc lấy giá gốc
+            # Cách đơn giản: gán giá_at_time = giá combo chia đều cho số SP để khỏi bằng 0, hoặc bằng 0 tùy thiết kế.
+            # Vì yêu cầu là combo hiển thị như 1 sp, ta sẽ lưu giá thật theo tỷ lệ giá gốc để tổng lại đúng bằng giá combo
+            
+            # Tính tỷ lệ giá của item so với giá gốc
+            original_combo_price = sum((ci.product.price * ci.quantity for ci in combo.combo_items), Decimal('0'))
+            if original_combo_price > 0:
+                ratio = (product.price * detail.quantity) / original_combo_price
+                price_for_this = (final_combo_price * ratio) / detail.quantity
+            else:
+                price_for_this = Decimal('0')
+
+            items_to_create.append({
+                "product_id": product.id,
+                "quantity": qty_needed,
+                "price_at_time": price_for_this,
+                "combo_id": combo.id,
+                "product_obj": product
+            })
+            
+    # Áp dụng giảm giá vĩnh viễn theo hạng (chỉ cho khách hàng)
+    if not is_staff and tier_discount_percent > 0:
+        tier_discount_amount = total_price * (tier_discount_percent / Decimal('100'))
+        total_price = max(total_price - tier_discount_amount, Decimal('0'))
 
     # 2. Xử lý UserReward (Mã giảm giá/Quà tặng)
     discounted_amount = 0
@@ -97,7 +151,8 @@ def create_order(db: Session, order_in: OrderCreate):
             order_id=db_order.id,
             product_id=item_data["product_id"],
             quantity=item_data["quantity"],
-            price_at_time=item_data["price_at_time"]
+            price_at_time=item_data["price_at_time"],
+            combo_id=item_data["combo_id"]
         )
         db.add(db_detail)
         

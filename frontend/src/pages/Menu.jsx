@@ -235,9 +235,14 @@ export default function Menu({ currentUser, products, categories, loading, selec
 
                   <div className="p-5 pt-3">
                     <h3 className="font-bold text-white text-[15px] tracking-tight mb-1 line-clamp-1">{p.name}</h3>
+                    {p.is_combo && p.combo_items && (
+                      <p className="text-[10px] text-white/50 mb-2 line-clamp-2 leading-tight">
+                        {p.combo_items.map(i => `${i.quantity}x ${i.product_name}`).join(', ')}
+                      </p>
+                    )}
                     <div className="flex items-end justify-between mt-3 gap-2">
                       <div className="min-w-0">
-                        {currentUser?.role_id === 2 ? (
+                        {currentUser?.role_id === 2 && !p.is_combo ? (
                           <div className="flex flex-col">
                             <span className="text-white/40 line-through text-xs font-semibold">{fmt(p.price)} đ</span>
                             <div className="text-emerald-400 font-black text-xl truncate">
@@ -246,9 +251,14 @@ export default function Menu({ currentUser, products, categories, loading, selec
                             </div>
                           </div>
                         ) : (
-                          <div className="text-[#00704A] font-black text-xl truncate">
-                            {fmt(p.price)}
-                            <span className="text-[10px] ml-1 text-white/20 font-medium">VND</span>
+                          <div className="flex flex-col">
+                            {p.is_combo && p.original_price > p.price && (
+                              <span className="text-white/40 line-through text-xs font-semibold">{fmt(p.original_price)} đ</span>
+                            )}
+                            <div className="text-[#00704A] font-black text-xl truncate">
+                              {fmt(p.price)}
+                              <span className="text-[10px] ml-1 text-white/20 font-medium">VND</span>
+                            </div>
                           </div>
                         )}
                         {p.quantity === null
