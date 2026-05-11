@@ -29,6 +29,15 @@ def register(req: AuthRequest, db: Session = Depends(get_db)):
     user_in = UserCreate(username=req.username, password=req.password)
     new_user = crud_user.create_user(db, user=user_in)
     
+    # Phát voucher Hạng Đồng khi đăng ký (tier 1)
+    from database.models.reward import Reward
+    from database.models.user_reward import UserReward
+    bronze_reward = db.query(Reward).filter(Reward.name.ilike("%Voucher Hạng Đồng%")).first()
+    if bronze_reward:
+        ur = UserReward(user_id=new_user.id, reward_id=bronze_reward.id)
+        db.add(ur)
+        db.commit()
+    
     # Tạo Token
     access_token = security.create_access_token(data={"sub": new_user.username})
     

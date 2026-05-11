@@ -35,6 +35,27 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
+// Xử lý lỗi 401 Unauthorized toàn cục
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear localStorage
+      localStorage.removeItem("user");
+      localStorage.removeItem("access_token");
+      
+      // Chuyển hướng người dùng về trang chủ
+      if (window.location.pathname !== "/menu" && window.location.pathname !== "/") {
+        window.location.href = "/menu";
+      } else {
+        // Nếu đã ở menu, tải lại trang để clear React state
+        window.location.reload();
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 const SidebarLink = ({ icon: Icon, label, path, active, onClick, visible = true }) => {
   if (!visible) return null;
   return (

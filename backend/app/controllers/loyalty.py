@@ -39,16 +39,19 @@ def check_and_upgrade_tier(db: Session, user: User, order_id: int = None):
         ).all()
         
         for passed_tier in passed_tiers:
-            quantity_to_grant = 2 if passed_tier.tier_order == 3 else 1
-            
-            # Tự động tìm voucher tương ứng với tên hạng (ví dụ: "Voucher Hạng Bạc", "Voucher Hạng Vàng")
-            reward_name_search = f"Voucher Hạng {passed_tier.tier_name}"
-            reward = db.query(Reward).filter(Reward.name.ilike(f"%{reward_name_search}%")).first()
-            
-            if reward:
-                for _ in range(quantity_to_grant):
-                    ur = UserReward(user_id=user.id, reward_id=reward.id)
-                    db.add(ur)
+            # CHỈ hạng Vàng (tier_order = 3) mới được tặng Voucher khi thăng hạng.
+            # Hạng Đồng được tặng khi tạo mới (trong auth), hạng Bạc/Kim Cương không tặng Voucher.
+            if passed_tier.tier_order == 3:
+                quantity_to_grant = 2
+                
+                # Tự động tìm voucher tương ứng với tên hạng (ví dụ: "Voucher Hạng Vàng")
+                reward_name_search = f"Voucher Hạng {passed_tier.tier_name}"
+                reward = db.query(Reward).filter(Reward.name.ilike(f"%{reward_name_search}%")).first()
+                
+                if reward:
+                    for _ in range(quantity_to_grant):
+                        ur = UserReward(user_id=user.id, reward_id=reward.id)
+                        db.add(ur)
                     
         # Ghi log thăng hạng
         log = PointLog(

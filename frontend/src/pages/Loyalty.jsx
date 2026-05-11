@@ -199,7 +199,8 @@ export default function Loyalty({ currentUser }) {
                     ) : (
                       <li className="flex items-center gap-2 text-white/50">- Không có giảm giá -</li>
                     )}
-                    {t.tier_order === 3 && <li className="flex items-center gap-2"><Gift className="size-3.5 text-amber-400" /> Tặng kèm Voucher 2 Ly nước bất kỳ khi thăng hạng.</li>}
+                    {t.tier_order === 1 && <li className="flex items-center gap-2"><Gift className="size-3.5 text-amber-400" /> Tặng 1 Voucher đổi 1 ly nước size S khi đăng ký.</li>}
+                    {t.tier_order === 3 && <li className="flex items-center gap-2"><Gift className="size-3.5 text-amber-400" /> Tặng 2 Voucher, mỗi voucher đổi 1 ly nước size L khi thăng hạng.</li>}
                   </ul>
                 </div>
               </div>
