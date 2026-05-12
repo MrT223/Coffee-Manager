@@ -17,6 +17,8 @@ def get_active_config(db: Session):
 
 def check_and_upgrade_tier(db: Session, user: User, order_id: int = None):
     """Kiểm tra và thăng hạng cho user, phát thưởng tự động nếu có"""
+    from database.models.tier_reward import TierReward
+    
     # Lấy tất cả các hạng được sắp xếp theo exp_required DESC
     tiers = db.query(MemberTier).order_by(MemberTier.exp_required.desc()).all()
     
@@ -32,39 +34,39 @@ def check_and_upgrade_tier(db: Session, user: User, order_id: int = None):
         old_tier_order = user.tier.tier_order
         user.tier_id = new_tier.id
         
-        # Phát thưởng tự động (Voucher) cho MỌI HẠNG mà người dùng vượt qua (để không bị skip)
+        # Phát thưởng tự động (Voucher) cho MỌI HẠNG mà người dùng vượt qua
         passed_tiers = db.query(MemberTier).filter(
             MemberTier.tier_order > old_tier_order, 
             MemberTier.tier_order <= new_tier.tier_order
         ).all()
         
         for passed_tier in passed_tiers:
-            # CHỈ hạng Vàng (tier_order = 3) mới được tặng Voucher khi thăng hạng.
-            # Hạng Đồng được tặng khi tạo mới (trong auth), hạng Bạc/Kim Cương không tặng Voucher.
-            if passed_tier.tier_order == 3:
-                quantity_to_grant = 2
-                
-                # Tự động tìm voucher tương ứng với tên hạng (ví dụ: "Voucher Hạng Vàng")
+            # Tìm các quy tắc thưởng voucher cho hạng này từ bảng tier_rewards
+            tier_rewards = db.query(TierReward).filter(
+                TierReward.tier_id == passed_tier.id,
+                TierReward.reward_type.in_(["VOUCHER_S", "VOUCHER_L"])
+            ).all()
+            
+            for tr in tier_rewards:
+                # Tìm reward tương ứng theo tên quy ước "Voucher Hạng {tên hạng}"
                 reward_name_search = f"Voucher Hạng {passed_tier.tier_name}"
-                reward = db.query(Reward).filter(Reward.name.ilike(f"%{reward_name_search}%")).first()
+                reward = db.query(Reward).filter(
+                    Reward.name.ilike(f"%{reward_name_search}%")
+                ).first()
                 
                 if reward:
-                    for _ in range(quantity_to_grant):
+                    for _ in range(tr.quantity):
                         ur = UserReward(user_id=user.id, reward_id=reward.id)
                         db.add(ur)
                     
-        # Ghi log thăng hạng
+        # Ghi log thăng hạng (dùng point_type_id=1 với order_id, hoặc fallback)
         log = PointLog(
             user_id=user.id,
             order_id=order_id,
-            point_type_id=1 if order_id else 2, # Fallback to 2 if order_id is somehow missing, though it shouldn't be for type 1. Actually if order_id is None, it will fail constraint if type is 1. We just use type 1 with order_id.
+            point_type_id=1,  # Earned – luôn có order_id từ add_points_from_order
             points_changed=0,
             description=f"Thăng hạng từ {old_tier_name} lên {new_tier.tier_name}"
         )
-        # Fix: if order_id is None, point_type_id=1 fails. We shouldn't use 1 without order_id.
-        if order_id is None:
-            # We'll use type 3 or fallback, let's hope it's not None.
-            log.point_type_id = 1 # Assuming order_id is always passed
         db.add(log)
 
 
@@ -124,9 +126,8 @@ def redeem_reward(db: Session, user_id: int, reward_id: int):
             raise HTTPException(status_code=400, detail="Quà tặng này đã hết")
         reward.quantity -= 1
     
-    # Thực hiện trừ điểm
+    # Thực hiện trừ điểm (chỉ trừ total_points, KHÔNG trừ total_exp vì exp là tích lũy vĩnh viễn để xét hạng)
     user.total_points -= reward.points_required
-    user.total_exp -= reward.points_required
     
     # Lưu vào kho quà của User
     user_reward = UserReward(

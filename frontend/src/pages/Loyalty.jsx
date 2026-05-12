@@ -194,13 +194,20 @@ export default function Loyalty({ currentUser }) {
                   <h4 className="text-base font-bold text-white mb-1" style={{ color: t.color }}>Hạng {t.tier_name}</h4>
                   <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest mb-2">Từ {fmt(t.exp_required)} điểm</p>
                   <ul className="text-sm text-white/80 space-y-1">
-                    {t.discount_percent > 0 ? (
+                    {t.tier_order === 1 && <li className="flex items-center gap-2"><Gift className="size-3.5 text-amber-400" /> Tặng 1 Voucher giảm 30.000đ khi đăng ký.</li>}
+                    {t.discount_percent > 0 && (
                       <li className="flex items-center gap-2"><Percent className="size-3.5 text-emerald-400" /> Giảm giá {t.discount_percent}% mọi đơn hàng vĩnh viễn.</li>
-                    ) : (
-                      <li className="flex items-center gap-2 text-white/50">- Không có giảm giá -</li>
                     )}
-                    {t.tier_order === 1 && <li className="flex items-center gap-2"><Gift className="size-3.5 text-amber-400" /> Tặng 1 Voucher đổi 1 ly nước size S khi đăng ký.</li>}
-                    {t.tier_order === 3 && <li className="flex items-center gap-2"><Gift className="size-3.5 text-amber-400" /> Tặng 2 Voucher, mỗi voucher đổi 1 ly nước size L khi thăng hạng.</li>}
+                    {t.tier_order === 3 && <li className="flex items-center gap-2"><Gift className="size-3.5 text-amber-400" /> Tặng 2 Voucher, mỗi voucher giảm 50.000đ khi thăng hạng.</li>}
+                    {t.tier_order === 1 && (
+                      <li className="flex items-center gap-2 text-white/40 text-xs italic">Voucher sẽ được tự động thêm vào kho quà của bạn.</li>
+                    )}
+                    {t.tier_order === 3 && (
+                      <li className="flex items-center gap-2 text-white/40 text-xs italic">Voucher sẽ được tự động thêm vào kho quà của bạn.</li>
+                    )}
+                    {t.discount_percent > 0 && (
+                      <li className="flex items-center gap-2 text-white/40 text-xs italic">Giảm giá áp dụng tự động khi thanh toán.</li>
+                    )}
                   </ul>
                 </div>
               </div>

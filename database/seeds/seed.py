@@ -44,9 +44,9 @@ POINT_TYPES = [
 
 MEMBER_TIERS = [
     {"tier_name": "Đồng", "tier_order": 1, "exp_required": 0, "discount_percent": 0.0, "icon": "🥉", "color": "#CD7F32"},
-    {"tier_name": "Bạc", "tier_order": 2, "exp_required": 1000, "discount_percent": 2.0, "icon": "🥈", "color": "#C0C0C0"},
-    {"tier_name": "Vàng", "tier_order": 3, "exp_required": 3000, "discount_percent": 0.0, "icon": "🥇", "color": "#FFD700"},
-    {"tier_name": "Kim Cương", "tier_order": 4, "exp_required": 10000, "discount_percent": 5.0, "icon": "💎", "color": "#B9F2FF"},
+    {"tier_name": "Bạc", "tier_order": 2, "exp_required": 10000, "discount_percent": 2.0, "icon": "🥈", "color": "#C0C0C0"},
+    {"tier_name": "Vàng", "tier_order": 3, "exp_required": 30000, "discount_percent": 2.0, "icon": "🥇", "color": "#FFD700"},
+    {"tier_name": "Kim Cương", "tier_order": 4, "exp_required": 100000, "discount_percent": 5.0, "icon": "💎", "color": "#B9F2FF"},
 ]
 
 
@@ -96,7 +96,17 @@ def run_seed():
         seed_table(db, PointType, POINT_TYPES, "type_name")
 
         print("Seeding member_tiers...")
-        seed_table(db, MemberTier, MEMBER_TIERS, "tier_name")
+        # Upsert: Cập nhật exp_required và discount_percent nếu tier đã tồn tại
+        for tier_data in MEMBER_TIERS:
+            existing = db.query(MemberTier).filter(
+                MemberTier.tier_name == tier_data["tier_name"]
+            ).first()
+            if existing:
+                existing.exp_required = tier_data["exp_required"]
+                existing.discount_percent = tier_data["discount_percent"]
+            else:
+                db.add(MemberTier(**tier_data))
+        db.commit()
 
         print("Seeding loyalty_config...")
         seed_loyalty_config(db)

@@ -50,6 +50,9 @@ PRODUCT_DATA = {
 REWARDS = [
     {"name": "Giam 10% don hang", "description": "Ap dung cho don tren 100k", "points_required": 100, "type_name": "Discount", "discount_value": 10},
     {"name": "Mien phi 1 ly Ca phe", "description": "Doi 1 ly ca phe bat ky", "points_required": 50, "type_name": "Gift", "discount_value": 0},
+    # Voucher tự động tặng khi thăng hạng (không cần đổi điểm, points_required=1 để qua constraint DB)
+    {"name": "Voucher Hạng Đồng", "description": "Voucher giảm 30.000đ khi đăng ký thành viên", "points_required": 1, "type_name": "Discount", "discount_value": 30000},
+    {"name": "Voucher Hạng Vàng", "description": "Voucher giảm 50.000đ khi thăng hạng Vàng", "points_required": 1, "type_name": "Discount", "discount_value": 50000},
 ]
 
 def seed_users(db: Session):
@@ -110,17 +113,52 @@ def seed_products(db: Session):
 
 def seed_rewards(db: Session):
     print("Seeding rewards...")
+    # Danh sách các voucher tự động (không hiển thị trong cửa hàng quà)
+    auto_grant_names = ["Voucher Hạng Đồng", "Voucher Hạng Vàng"]
+    
     for r_data in REWARDS:
         exists = db.query(Reward).filter(Reward.name == r_data["name"]).first()
         if not exists:
             reward_type = db.query(RewardType).filter(RewardType.type_name == r_data["type_name"]).first()
             if reward_type:
+                is_auto = r_data["name"] in auto_grant_names
                 db.add(Reward(
                     name=r_data["name"],
                     description=r_data["description"],
                     points_required=r_data["points_required"],
                     reward_type_id=reward_type.id,
-                    discount_value=r_data["discount_value"]
+                    discount_value=r_data["discount_value"],
+                    is_active=not is_auto  # Voucher tự động: ẩn khỏi cửa hàng
+                ))
+    db.commit()
+
+def seed_tier_rewards(db: Session):
+    """Seed bảng tier_rewards để lưu quy tắc thưởng theo hạng"""
+    from database.models.tier_reward import TierReward
+    from database.models.member_tier import MemberTier
+    
+    print("Seeding tier_rewards...")
+    
+    TIER_REWARDS = [
+        {"tier_name": "Đồng", "reward_type": "VOUCHER_S", "description": "Tặng 1 Voucher giảm 30.000đ khi đăng ký", "quantity": 1},
+        {"tier_name": "Bạc", "reward_type": "PERMANENT_DISCOUNT", "description": "Giảm giá 2% mọi đơn hàng vĩnh viễn", "quantity": 1},
+        {"tier_name": "Vàng", "reward_type": "VOUCHER_L", "description": "Tặng 2 Voucher, mỗi voucher giảm 50.000đ khi thăng hạng", "quantity": 2},
+        {"tier_name": "Kim Cương", "reward_type": "PERMANENT_DISCOUNT", "description": "Giảm giá 5% mọi đơn hàng vĩnh viễn", "quantity": 1},
+    ]
+    
+    for tr_data in TIER_REWARDS:
+        tier = db.query(MemberTier).filter(MemberTier.tier_name == tr_data["tier_name"]).first()
+        if tier:
+            exists = db.query(TierReward).filter(
+                TierReward.tier_id == tier.id,
+                TierReward.reward_type == tr_data["reward_type"]
+            ).first()
+            if not exists:
+                db.add(TierReward(
+                    tier_id=tier.id,
+                    reward_type=tr_data["reward_type"],
+                    description=tr_data["description"],
+                    quantity=tr_data["quantity"]
                 ))
     db.commit()
 
@@ -131,6 +169,7 @@ def run_mock_seed():
         seed_categories(db)
         seed_products(db)
         seed_rewards(db)
+        seed_tier_rewards(db)
         print("Mock data seed completed successfully!")
     except Exception as e:
         db.rollback()

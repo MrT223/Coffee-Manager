@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
-export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser }) {
+export default function Checkout({ cart, cartTotal, cartOriginalTotal, onCompleteOrder, currentUser }) {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userRewards, setUserRewards] = useState([]);
@@ -22,14 +22,16 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
     }
   }, [currentUser]);
 
-  const tierDiscountPercent = currentUser?.tier?.discount_percent ? parseFloat(currentUser.tier.discount_percent) : 0;
-  const tierDiscountAmount = (cartTotal * tierDiscountPercent) / 100;
+  // cartTotal ĐÃ bao gồm giảm giá hạng/nhân viên từ App.jsx
+  // cartOriginalTotal là giá gốc chưa giảm
+  const appliedDiscount = cartOriginalTotal - cartTotal; // Phần giảm giá hạng/NV đã tính
 
   const discountAmount = selectedReward && selectedReward.reward?.reward_type_id === 2 
     ? parseFloat(selectedReward.reward.discount_value || 0) 
     : 0;
   
-  const finalTotal = Math.max(cartTotal - tierDiscountAmount - discountAmount, 0);
+  // Chỉ trừ thêm voucher, KHÔNG trừ tier discount lần nữa
+  const finalTotal = Math.max(cartTotal - discountAmount, 0);
 
   const handleOrder = async () => {
     if (!currentUser || !currentUser.id) {
@@ -139,20 +141,19 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
           <div className="flex justify-between text-xs font-bold gap-4">
             <span className="text-white/40 uppercase tracking-wider flex-shrink-0">Tạm tính:</span>
             <span className="text-white min-w-0 text-right">
-              {new Intl.NumberFormat('vi-VN').format(cartTotal)} đ
-              {currentUser?.role_id === 2 && (
-                 <span className="block text-[9px] text-emerald-400/80 uppercase mt-1">Đã áp dụng giảm 20% NV vào giá món</span>
-              )}
+              {new Intl.NumberFormat('vi-VN').format(cartOriginalTotal)} đ
             </span>
           </div>
           <div className="flex justify-between text-xs font-bold gap-4">
             <span className="text-white/40 uppercase tracking-wider flex-shrink-0">Phí dịch vụ:</span>
             <span className="text-white">MIỄN PHÍ</span>
           </div>
-          {tierDiscountAmount > 0 && (
+          {appliedDiscount > 0 && (
             <div className="flex justify-between text-xs font-bold gap-4">
-              <span className="text-emerald-400 uppercase tracking-wider flex-shrink-0">Ưu đãi hạng {currentUser?.tier?.tier_name}:</span>
-              <span className="text-emerald-400">- {new Intl.NumberFormat('vi-VN').format(tierDiscountAmount)} đ</span>
+              <span className="text-emerald-400 uppercase tracking-wider flex-shrink-0">
+                {currentUser?.role_id === 2 ? 'Ưu đãi nhân viên (-20%):' : `Ưu đãi hạng ${currentUser?.tier?.tier_name} (-${currentUser?.tier?.discount_percent}%):`}
+              </span>
+              <span className="text-emerald-400">- {new Intl.NumberFormat('vi-VN').format(appliedDiscount)} đ</span>
             </div>
           )}
           {discountAmount > 0 && (
