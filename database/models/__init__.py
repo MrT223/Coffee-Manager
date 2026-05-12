@@ -6,11 +6,15 @@ from database.models.product_status import ProductStatus
 from database.models.order_status import OrderStatus
 from database.models.reward_type import RewardType
 from database.models.point_type import PointType
+from database.models.member_tier import MemberTier
+from database.models.tier_reward import TierReward
 from database.models.user import User
 from database.models.category import Category
 from database.models.product import Product
 from database.models.order import Order
 from database.models.order_detail import OrderDetail
+from database.models.combo import Combo
+from database.models.combo_item import ComboItem
 from database.models.reward import Reward
 from database.models.point_log import PointLog
 from database.models.loyalty_config import LoyaltyConfig
@@ -24,11 +28,15 @@ __all__ = [
     "OrderStatus",
     "RewardType",
     "PointType",
+    "MemberTier",
+    "TierReward",
     "User",
     "Category",
     "Product",
     "Order",
     "OrderDetail",
+    "Combo",
+    "ComboItem",
     "Reward",
     "PointLog",
     "LoyaltyConfig",

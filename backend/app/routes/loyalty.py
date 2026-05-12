@@ -53,3 +53,33 @@ def update_loyalty_config(config_in: LoyaltyConfigUpdate, db: Session = Depends(
     db.commit()
     db.refresh(config)
     return config
+
+
+from database.models.member_tier import MemberTier
+from database.schemas.member_tier import MemberTierRead
+
+class MemberTierUpdate(BaseModel):
+    exp_required: int
+    discount_percent: Decimal
+
+
+@router.get("/tiers", response_model=List[MemberTierRead])
+def get_member_tiers(db: Session = Depends(get_db)):
+    """Lấy danh sách tất cả các hạng khách hàng"""
+    return db.query(MemberTier).order_by(MemberTier.tier_order.asc()).all()
+
+
+@router.put("/tiers/{tier_id}", response_model=MemberTierRead)
+def update_member_tier(tier_id: int, tier_in: MemberTierUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
+    """Admin cập nhật điểm cần thiết và % giảm giá của hạng"""
+    tier = db.query(MemberTier).filter(MemberTier.id == tier_id).first()
+    if not tier:
+        raise HTTPException(status_code=404, detail="Không tìm thấy hạng khách hàng")
+    
+    tier.exp_required = tier_in.exp_required
+    tier.discount_percent = tier_in.discount_percent
+    
+    db.commit()
+    db.refresh(tier)
+    return tier
+

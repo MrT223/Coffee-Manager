@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
-export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser }) {
+export default function Checkout({ cart, cartTotal, cartOriginalTotal, onCompleteOrder, currentUser }) {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userRewards, setUserRewards] = useState([]);
@@ -22,10 +22,15 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
     }
   }, [currentUser]);
 
+  // cartTotal ĐÃ bao gồm giảm giá hạng/nhân viên từ App.jsx
+  // cartOriginalTotal là giá gốc chưa giảm
+  const appliedDiscount = cartOriginalTotal - cartTotal; // Phần giảm giá hạng/NV đã tính
+
   const discountAmount = selectedReward && selectedReward.reward?.reward_type_id === 2 
     ? parseFloat(selectedReward.reward.discount_value || 0) 
     : 0;
   
+  // Chỉ trừ thêm voucher, KHÔNG trừ tier discount lần nữa
   const finalTotal = Math.max(cartTotal - discountAmount, 0);
 
   const handleOrder = async () => {
@@ -42,8 +47,12 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
     try {
       const orderPayload = {
         user_id: currentUser.id, 
-        items: cart.map(item => ({
+        items: cart.filter(item => !item.is_combo).map(item => ({
           product_id: item.id,
+          quantity: item.qty
+        })),
+        combo_items: cart.filter(item => item.is_combo).map(item => ({
+          combo_id: item.combo_id,
           quantity: item.qty
         })),
         user_reward_id: selectedReward ? selectedReward.id : null
@@ -132,16 +141,21 @@ export default function Checkout({ cart, cartTotal, onCompleteOrder, currentUser
           <div className="flex justify-between text-xs font-bold gap-4">
             <span className="text-white/40 uppercase tracking-wider flex-shrink-0">Tạm tính:</span>
             <span className="text-white min-w-0 text-right">
-              {new Intl.NumberFormat('vi-VN').format(cartTotal)} đ
-              {currentUser?.role_id === 2 && (
-                 <span className="block text-[9px] text-emerald-400/80 uppercase mt-1">Đã áp dụng giảm 20% NV</span>
-              )}
+              {new Intl.NumberFormat('vi-VN').format(cartOriginalTotal)} đ
             </span>
           </div>
           <div className="flex justify-between text-xs font-bold gap-4">
             <span className="text-white/40 uppercase tracking-wider flex-shrink-0">Phí dịch vụ:</span>
             <span className="text-white">MIỄN PHÍ</span>
           </div>
+          {appliedDiscount > 0 && (
+            <div className="flex justify-between text-xs font-bold gap-4">
+              <span className="text-emerald-400 uppercase tracking-wider flex-shrink-0">
+                {currentUser?.role_id === 2 ? 'Ưu đãi nhân viên (-20%):' : `Ưu đãi hạng ${currentUser?.tier?.tier_name} (-${currentUser?.tier?.discount_percent}%):`}
+              </span>
+              <span className="text-emerald-400">- {new Intl.NumberFormat('vi-VN').format(appliedDiscount)} đ</span>
+            </div>
+          )}
           {discountAmount > 0 && (
             <div className="flex justify-between text-xs font-bold gap-4">
               <span className="text-emerald-400 uppercase tracking-wider flex-shrink-0 flex items-center gap-1.5"><Ticket className="size-3" /> Ưu đãi áp dụng:</span>

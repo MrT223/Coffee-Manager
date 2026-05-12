@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import CustomSelect from "../components/CustomSelect";
+import ComboTab from "../components/ComboTab";
 
 const API = "http://127.0.0.1:8000/api";
 
@@ -165,7 +166,17 @@ export default function ProductsManagement({ currentUser }) {
             <FolderOpen className="size-3.5" />Danh mục ({categories.length})
           </button>
         )}
+        {(currentUser?.role_id === 2 || currentUser?.role_id === 3) && (
+          <button onClick={() => setActiveTab("combos")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "combos" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
+            <Package className="size-3.5" />Combo
+          </button>
+        )}
       </div>
+
+      {/* TAB COMBO */}
+      {activeTab === "combos" && (
+        <ComboTab products={products} />
+      )}
 
       {/* TAB SẢN PHẨM */}
       {activeTab === "products" && (

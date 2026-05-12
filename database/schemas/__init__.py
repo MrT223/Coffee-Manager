@@ -8,3 +8,6 @@ from database.schemas.order_detail import OrderDetailBase, OrderDetailCreate, Or
 from database.schemas.reward import RewardBase, RewardCreate, RewardRead
 from database.schemas.point_log import PointLogBase, PointLogRead
 from database.schemas.user_reward import UserRewardBase, UserRewardCreate, UserRewardRead
+from database.schemas.combo import ComboBase, ComboCreate, ComboRead, ComboItemCreate, ComboItemRead
+from database.schemas.member_tier import MemberTierBase, MemberTierRead
+

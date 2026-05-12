@@ -212,9 +212,20 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
                           <span className="text-white/40 line-through text-[10px] font-semibold mr-2">{fmt(item.price)} đ</span>
                           <span className="text-emerald-400 font-black text-xs truncate" title={fmt(item.price * 0.8) + " đ"}>{fmtShort(item.price * 0.8)} đ</span>
                         </div>
-                      ) : (
-                        <p className="text-amber-300 font-black text-xs mt-0.5 truncate" title={fmt(item.price) + " đ"}>{fmtShort(item.price)} đ</p>
-                      )}
+                      ) : (() => {
+                        const tierDiscount = currentUser?.tier?.discount_percent ? parseFloat(currentUser.tier.discount_percent) : 0;
+                        const hasLoyaltyDiscount = tierDiscount > 0 && currentUser?.role_id === 1 && !item.is_combo;
+                        const discountedPrice = hasLoyaltyDiscount ? item.price * (1 - tierDiscount / 100) : item.price;
+                        return hasLoyaltyDiscount ? (
+                          <div className="mt-0.5">
+                            <span className="text-white/40 line-through text-[10px] font-semibold mr-2">{fmt(item.price)} đ</span>
+                            <span className="text-emerald-400 font-black text-xs truncate" title={fmt(discountedPrice) + " đ"}>{fmtShort(discountedPrice)} đ</span>
+                            <span className="text-[9px] text-emerald-400/60 font-bold block">Ưu đãi {currentUser.tier.tier_name} -{tierDiscount}%</span>
+                          </div>
+                        ) : (
+                          <p className="text-amber-300 font-black text-xs mt-0.5 truncate" title={fmt(item.price) + " đ"}>{fmtShort(item.price)} đ</p>
+                        );
+                      })()}
                     </div>
                     <div className="flex items-center gap-3 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
                       <button onClick={() => updateQty(item.id, -1)} className="text-white/40 hover:text-white font-bold px-1"><Minus className="size-3" /></button>
@@ -239,7 +250,19 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
             <div className="bg-[#1E3932] text-white rounded-3xl p-8 flex items-center justify-between border border-white/10">
               <div className="min-w-0 pr-4">
                 <p className="text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-1 truncate">Tổng cộng thanh toán</p>
-                <h3 className="text-3xl font-black tracking-tight truncate block max-w-full" title={new Intl.NumberFormat('vi-VN').format(cartTotal) + " VND"}>{fmtShort(cartTotal)} <span className="text-sm font-medium opacity-40">VND</span></h3>
+                {(() => {
+                  const tierDiscount = currentUser?.tier?.discount_percent ? parseFloat(currentUser.tier.discount_percent) : 0;
+                  const hasLoyaltyDiscount = tierDiscount > 0 && currentUser?.role_id === 1;
+                  const originalTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                  return (
+                    <>
+                      {hasLoyaltyDiscount && (
+                        <p className="text-white/30 line-through text-sm font-semibold">{fmtShort(originalTotal)} VND</p>
+                      )}
+                      <h3 className={`text-3xl font-black tracking-tight truncate block max-w-full ${hasLoyaltyDiscount ? 'text-emerald-400' : ''}`} title={new Intl.NumberFormat('vi-VN').format(cartTotal) + " VND"}>{fmtShort(cartTotal)} <span className="text-sm font-medium opacity-40">VND</span></h3>
+                    </>
+                  );
+                })()}
               </div>
               <button
                 onClick={handleGoToCheckout}

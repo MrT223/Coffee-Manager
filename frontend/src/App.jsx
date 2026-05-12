@@ -35,6 +35,27 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
+// Xử lý lỗi 401 Unauthorized toàn cục
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear localStorage
+      localStorage.removeItem("user");
+      localStorage.removeItem("access_token");
+      
+      // Chuyển hướng người dùng về trang chủ
+      if (window.location.pathname !== "/menu" && window.location.pathname !== "/") {
+        window.location.href = "/menu";
+      } else {
+        // Nếu đã ở menu, tải lại trang để clear React state
+        window.location.reload();
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 const SidebarLink = ({ icon: Icon, label, path, active, onClick, visible = true }) => {
   if (!visible) return null;
   return (
@@ -95,7 +116,8 @@ function MainLayout() {
           ...prev, 
           birthday: profile.birthday,
           birthday_locked: profile.birthday_locked,
-          total_points: profile.total_points
+          total_points: profile.total_points,
+          tier: profile.tier
         }));
 
         // Trigger birthday modal if flag is set
@@ -113,16 +135,38 @@ function MainLayout() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, catRes, comboRes] = await Promise.all([
           axios.get("http://127.0.0.1:8000/api/products/"),
-          axios.get("http://127.0.0.1:8000/api/categories/")
+          axios.get("http://127.0.0.1:8000/api/categories/"),
+          axios.get("http://127.0.0.1:8000/api/combos/?active_only=true")
         ]);
         const freshProducts = prodRes.data || [];
-        setProducts(freshProducts.map(p => {
+        const combos = comboRes.data || [];
+        
+        // Map combos to look like products
+        const combosMapped = combos.map(c => ({
+          id: `combo_${c.id}`, // String ID để phân biệt
+          combo_id: c.id,
+          name: c.name,
+          price: c.final_price,
+          original_price: c.original_price,
+          image_url: c.image_url,
+          category_id: "combo_cat",
+          is_combo: true,
+          combo_items: c.items,
+          quantity: null // Không quản lý tồn kho cứng ở level combo
+        }));
+
+        setProducts([...combosMapped, ...freshProducts.map(p => {
           const cartItem = cartRef.current.find(item => item.id === p.id);
           return cartItem && p.quantity !== null ? { ...p, quantity: p.quantity - cartItem.qty } : p;
-        }));
-        setCategories([{ id: 0, category_name: "All" }, ...(catRes.data || [])]);
+        })]);
+        
+        setCategories([
+          { id: 0, category_name: "All" }, 
+          { id: "combo_cat", category_name: "Combo đặc biệt" },
+          ...(catRes.data || [])
+        ]);
       } catch (error) { console.error("Lỗi API:", error); } finally { setLoading(false); }
     };
     fetchData();
@@ -191,11 +235,19 @@ function MainLayout() {
     navigate("/menu");
   };
 
+  // Tính giảm giá theo hạng thành viên
+  const tierDiscountPercent = (currentUser?.role_id === 1 && currentUser?.tier?.discount_percent) ? parseFloat(currentUser.tier.discount_percent) : 0;
+  
   const cartTotal = cart.reduce((sum, item) => {
     let price = item.price;
-    if (currentUser?.role_id === 2) price = price * 0.8;
+    if (currentUser?.role_id === 2 && !item.is_combo) {
+      price = price * 0.8; // Nhân viên giảm 20%
+    } else if (tierDiscountPercent > 0 && currentUser?.role_id === 1 && !item.is_combo) {
+      price = price * (1 - tierDiscountPercent / 100); // Giảm giá hạng thành viên
+    }
     return sum + (price * item.qty);
   }, 0);
+  const cartOriginalTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
 
   const requireCustomerAuth = () => {
@@ -309,7 +361,7 @@ function MainLayout() {
             <Route path="/" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
             <Route path="/menu" element={<Menu currentUser={currentUser} products={products} categories={categories} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onAddToCart={addToCart} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
             <Route path="/cart" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1, 2]}><Cart cart={cart} removeFromCart={removeFromCart} cartTotal={cartTotal} updateQty={updateQty} currentUser={currentUser} onRequireAuth={requireCustomerAuth} /></ProtectedRoute>} />
-            <Route path="/checkout" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1, 2]}><Checkout cart={cart} cartTotal={cartTotal} onCompleteOrder={() => setCart([])} currentUser={currentUser} /></ProtectedRoute>} />
+            <Route path="/checkout" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1, 2]}><Checkout cart={cart} cartTotal={cartTotal} cartOriginalTotal={cartOriginalTotal} onCompleteOrder={() => setCart([])} currentUser={currentUser} /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><Dashboard /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[2]}><OrdersManagement /></ProtectedRoute>} />
             <Route path="/products" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[2, 3]}><ProductsManagement currentUser={currentUser} /></ProtectedRoute>} />
@@ -332,7 +384,14 @@ function MainLayout() {
                   </div>
                   <div>
                     <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Tạm tính</div>
-                    <div className="text-sm font-black">{new Intl.NumberFormat('vi-VN').format(cartTotal)} đ</div>
+                    {tierDiscountPercent > 0 && currentUser?.role_id === 1 ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-white/30 line-through">{new Intl.NumberFormat('vi-VN').format(cartOriginalTotal)}</span>
+                        <span className="text-sm font-black text-emerald-400">{new Intl.NumberFormat('vi-VN').format(cartTotal)} đ</span>
+                      </div>
+                    ) : (
+                      <div className="text-sm font-black">{new Intl.NumberFormat('vi-VN').format(cartTotal)} đ</div>
+                    )}
                   </div>
                 </div>
                 <button onClick={() => setIsCartOpen(true)} className="bg-[#00704A] hover:bg-[#00804f] px-6 py-3 rounded-xl text-[11px] font-black flex items-center gap-2 transition-all shadow-lg shadow-[#00704A]/30">
@@ -359,9 +418,20 @@ function MainLayout() {
                       <img src={item.image_url || "https://via.placeholder.com/150"} className="size-14 rounded-xl object-cover" />
                       <div className="flex-grow">
                         <div className="text-sm font-bold text-white">{item.name}</div>
-                        <div className="text-[#00704A] font-black text-xs">
-                          {new Intl.NumberFormat('vi-VN').format(currentUser?.role_id === 2 ? item.price * 0.8 : item.price)} đ
-                        </div>
+                        {(() => {
+                          const isStaff = currentUser?.role_id === 2;
+                          const hasLoyaltyDiscount = tierDiscountPercent > 0 && currentUser?.role_id === 1 && !item.is_combo;
+                          const displayPrice = isStaff && !item.is_combo ? item.price * 0.8 : hasLoyaltyDiscount ? item.price * (1 - tierDiscountPercent / 100) : item.price;
+                          const showDiscount = (isStaff && !item.is_combo) || hasLoyaltyDiscount;
+                          return showDiscount ? (
+                            <div>
+                              <span className="text-white/30 line-through text-[10px] mr-1">{new Intl.NumberFormat('vi-VN').format(item.price)}</span>
+                              <span className="text-emerald-400 font-black text-xs">{new Intl.NumberFormat('vi-VN').format(displayPrice)} đ</span>
+                            </div>
+                          ) : (
+                            <div className="text-[#00704A] font-black text-xs">{new Intl.NumberFormat('vi-VN').format(item.price)} đ</div>
+                          );
+                        })()}
                         <div className="flex items-center gap-2 mt-1.5">
                           <button onClick={() => updateQty(item.id, -1)} className="size-6 flex items-center justify-center rounded-lg bg-white/10 text-white/60 hover:bg-white/20 text-xs font-bold transition-colors"><Minus className="size-3" /></button>
                           <span className="text-xs font-black w-5 text-center text-white">{item.qty}</span>
@@ -375,7 +445,12 @@ function MainLayout() {
                 <div className="mt-6 pt-5 border-t border-white/10">
                   <div className="flex justify-between items-end mb-5">
                     <span className="text-white/40 font-bold uppercase text-[10px] tracking-widest">Tổng cộng</span>
-                    <span className="text-2xl font-black text-white">{new Intl.NumberFormat('vi-VN').format(cartTotal)} <span className="text-sm text-white/50">đ</span></span>
+                    <div className="text-right">
+                      {tierDiscountPercent > 0 && currentUser?.role_id === 1 && (
+                        <div className="text-xs text-white/30 line-through">{new Intl.NumberFormat('vi-VN').format(cartOriginalTotal)} đ</div>
+                      )}
+                      <span className={`text-2xl font-black ${tierDiscountPercent > 0 && currentUser?.role_id === 1 ? 'text-emerald-400' : 'text-white'}`}>{new Intl.NumberFormat('vi-VN').format(cartTotal)} <span className="text-sm text-white/50">đ</span></span>
+                    </div>
                   </div>
                   <button onClick={() => { if (requireCustomerAuth()) { setIsCartOpen(false); navigate("/checkout"); } }} className="w-full py-3.5 bg-[#00704A] hover:bg-[#00804f] text-white rounded-2xl text-xs font-black shadow-lg shadow-[#00704A]/30 flex items-center justify-center gap-2 transition-all">
                     TIẾN HÀNH THANH TOÁN <CreditCard className="size-4" />

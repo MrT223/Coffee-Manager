@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Any
 from datetime import date, datetime
 from decimal import Decimal
 import os
@@ -45,6 +45,7 @@ class ProfileRead(BaseModel):
     birthday: Optional[date] = None
     birthday_locked: bool = False
     should_show_birthday_modal: bool = False
+    tier: Optional[Any] = None
 
     class Config:
         from_attributes = True
@@ -113,6 +114,18 @@ def get_my_profile(
             current_user.last_birthday_wish_year = today.year
             db.commit()
 
+    tier_data = None
+    if current_user.tier:
+        tier_data = {
+            "id": current_user.tier.id,
+            "tier_name": current_user.tier.tier_name,
+            "tier_order": current_user.tier.tier_order,
+            "exp_required": current_user.tier.exp_required,
+            "discount_percent": float(current_user.tier.discount_percent),
+            "color": current_user.tier.color,
+            "icon": current_user.tier.icon
+        }
+
     return ProfileRead(
         id=current_user.id,
         username=current_user.username,
@@ -126,6 +139,7 @@ def get_my_profile(
         total_orders=total_orders,
         total_spent=total_spent,
         should_show_birthday_modal=should_show_birthday_modal,
+        tier=tier_data,
     )
 
 

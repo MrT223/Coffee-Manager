@@ -19,6 +19,7 @@ from app.routes.user import router as user_router
 from app.routes.loyalty import router as loyalty_router
 from app.routes.user_reward import router as user_reward_router
 from app.routes.profile import router as profile_router
+from app.routes.combo import router as combo_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -43,6 +44,7 @@ app.include_router(user_router, prefix="/api/users", tags=["Users"])
 app.include_router(loyalty_router, prefix="/api/loyalty", tags=["Loyalty"])
 app.include_router(user_reward_router, prefix="/api/user-rewards", tags=["UserRewards"])
 app.include_router(profile_router, prefix="/api/profile", tags=["Profile"])
+app.include_router(combo_router, prefix="/api/combos", tags=["Combos"])
 
 @app.get("/")
 def root():
