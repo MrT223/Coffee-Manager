@@ -155,4 +155,43 @@ def login(req: AuthRequest, db: Session = Depends(get_db)):
             "total_points": db_user.total_points,
             "tier": tier_data
         }
-    }
+    }
+
+@router.post("/check-phone")
+def check_phone(req: AuthRequest, db: Session = Depends(get_db)):
+    db_user = crud_user.get_user_by_username(db, username=req.username)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Số điện thoại chưa được đăng ký")
+    return {"message": "Số điện thoại hợp lệ"}
+
+@router.post("/reset-password")
+def reset_password(req: AuthRequest, db: Session = Depends(get_db)):
+    try:
+        # 1. Verify Firebase Token
+        decoded_token = firebase_auth.verify_id_token(req.firebase_token)
+        phone_in_token = decoded_token.get("phone_number")
+        if not phone_in_token:
+             raise HTTPException(status_code=400, detail="Token không hợp lệ hoặc thiếu số điện thoại")
+             
+        # 2. Find user by phone in token
+        stored_username = phone_in_token
+        if phone_in_token.startswith("+84"):
+            stored_username = "0" + phone_in_token[3:]
+            
+        db_user = crud_user.get_user_by_username(db, username=stored_username)
+        if not db_user:
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản với số điện thoại này")
+            
+        # 3. Update password
+        from app.security import get_password_hash
+        db_user.password = get_password_hash(req.password) # Dùng trường password làm mật khẩu mới
+        db.commit()
+        
+        return {"message": "Đặt lại mật khẩu thành công"}
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Lỗi hệ thống Backend: {str(e)}")

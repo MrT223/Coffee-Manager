@@ -16,6 +16,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   const [error, setError] = useState("");
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState(null);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   
   const recaptchaRef = useRef(null);
 
@@ -135,7 +136,20 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!isLogin && !showOtpStep) {
+    if (isForgotPassword && !showOtpStep) {
+        setLoading(true);
+        setError("");
+        try {
+            await axios.post(`${API_BASE}/auth/check-phone`, { username: formData.username, password: "dummy_password" });
+            handleRequestOtp();
+        } catch (err) {
+            setError(err.response?.data?.detail || "Số điện thoại chưa được đăng ký");
+            setLoading(false);
+        }
+        return;
+    }
+    
+    if (!isLogin && !isForgotPassword && !showOtpStep) {
         handleRequestOtp();
         return;
     }
@@ -144,12 +158,29 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     setError("");
     
     try {
-      if (isLogin) {
+      if (isLogin && !isForgotPassword) {
         const res = await axios.post(`${API_BASE}/auth/login`, {
           username: formData.username,
           password: formData.password
         });
         handleSuccess(res.data);
+      } else if (isForgotPassword) {
+        // 1. Verify OTP with Firebase
+        const result = await confirmationResult.confirm(formData.otp);
+        const idToken = await result.user.getIdToken();
+
+        // 2. Reset Password on Backend
+        await axios.post(`${API_BASE}/auth/reset-password`, {
+          username: formData.username,
+          password: formData.password, 
+          firebase_token: idToken
+        });
+
+        toast.success("Đặt lại mật khẩu thành công!");
+        setIsForgotPassword(false);
+        setIsLogin(true);
+        setShowOtpStep(false);
+        setFormData({ ...formData, password: '', otp: '' });
       } else {
         // 1. Verify OTP with Firebase
         const result = await confirmationResult.confirm(formData.otp);
@@ -208,7 +239,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-3xl bg-[#1E3932] p-8 text-left shadow-2xl transition-all border border-white/10">
                 <div className="flex justify-between items-center mb-6">
                   <Dialog.Title className="text-2xl font-bold text-white">
-                    {isLogin ? 'Chào mừng trở lại' : showOtpStep ? 'Xác thực mã OTP' : 'Đăng ký thành viên'}
+                    {isForgotPassword ? (showOtpStep ? 'Đặt lại mật khẩu' : 'Quên mật khẩu') : isLogin ? 'Chào mừng trở lại' : showOtpStep ? 'Xác thực mã OTP' : 'Đăng ký thành viên'}
                   </Dialog.Title>
                   <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                     <X className="size-5 text-white/40" />
@@ -219,28 +250,39 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {!showOtpStep ? (
                     <>
-                      {!isLogin && (
+                      {!isLogin && !isForgotPassword && (
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-white/30" />
                           <input name="full_name" type="text" value={formData.full_name} onChange={handleChange} placeholder="Họ và tên" className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" required={!isLogin} />
                         </div>
                       )}
+                      
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-white/30" />
                         <input name="username" type="tel" value={formData.username} onChange={handleChange} placeholder="Số điện thoại" className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" required />
                       </div>
-                      {!isLogin && (
+                      
+                      {!isLogin && !isForgotPassword && (
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-white/30" />
                           <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email (tùy chọn)" className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" />
                         </div>
                       )}
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-white/30" />
-                        <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Mật khẩu" className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" required />
-                      </div>
+                      
+                      {!isForgotPassword && (
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-white/30" />
+                          <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Mật khẩu" className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" required={!isForgotPassword} />
+                        </div>
+                      )}
+                      
+                      {isLogin && !isForgotPassword && (
+                        <div className="flex justify-end mt-1">
+                          <button type="button" onClick={() => setIsForgotPassword(true)} className="text-xs text-[#00704A] font-bold hover:underline">Quên mật khẩu?</button>
+                        </div>
+                      )}
 
-                      {!isLogin && (
+                      {(!isLogin || isForgotPassword) && (
                         <div className="flex justify-center my-4">
                           <div id="recaptcha-container"></div>
                         </div>
@@ -265,21 +307,37 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                             />
                           ))}
                         </div>
+                        
+                        {isForgotPassword && (
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-white/30" />
+                            <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Mật khẩu mới" className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" required />
+                          </div>
+                        )}
+                        
                         <button type="button" onClick={handleRequestOtp} className="w-full text-xs text-[#00704A] font-bold hover:underline">Gửi lại mã OTP</button>
                     </div>
                   )}
 
                   <button disabled={loading} type="submit" className="w-full py-3 bg-[#00704A] hover:bg-[#00804f] text-white rounded-xl font-bold shadow-lg shadow-[#00704A]/20 transition-all flex items-center justify-center gap-2">
-                    {loading ? <Loader2 className="size-5 animate-spin" /> : (isLogin ? 'Đăng nhập' : showOtpStep ? 'Xác nhận & Đăng ký' : 'Nhận mã OTP')}
+                    {loading ? <Loader2 className="size-5 animate-spin" /> : (isForgotPassword ? (showOtpStep ? 'Đặt lại mật khẩu' : 'Nhận mã OTP') : isLogin ? 'Đăng nhập' : showOtpStep ? 'Xác nhận & Đăng ký' : 'Nhận mã OTP')}
                   </button>
                 </form>
 
                 <div className="mt-6 text-center">
                   <p className="text-white/40 text-sm">
-                    {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}
-                    <button type="button" onClick={() => { setIsLogin(!isLogin); setShowOtpStep(false); }} className="ml-2 text-[#00704A] font-bold hover:underline">
-                      {isLogin ? 'Đăng ký ngay' : 'Đăng nhập'}
-                    </button>
+                    {isForgotPassword ? (
+                      <button type="button" onClick={() => { setIsForgotPassword(false); setIsLogin(true); setShowOtpStep(false); }} className="text-[#00704A] font-bold hover:underline">
+                        Quay lại Đăng nhập
+                      </button>
+                    ) : (
+                      <>
+                        {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}
+                        <button type="button" onClick={() => { setIsLogin(!isLogin); setShowOtpStep(false); }} className="ml-2 text-[#00704A] font-bold hover:underline">
+                          {isLogin ? 'Đăng ký ngay' : 'Đăng nhập'}
+                        </button>
+                      </>
+                    )}
                   </p>
                 </div>
               </Dialog.Panel>
