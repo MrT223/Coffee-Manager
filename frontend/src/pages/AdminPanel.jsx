@@ -1,7 +1,8 @@
+/* eslint-disable no-unused-vars */
 // src/pages/AdminPanel.jsx
 import React, { useState, useEffect } from "react";
 import {
-  Users, Loader2, Shield, Crown, UserCheck, RefreshCw
+  Users, Loader2, Shield, Crown, UserCheck, RefreshCw, MessageSquare
 } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -19,6 +20,7 @@ const ROLE_MAP = {
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
 
@@ -27,7 +29,18 @@ export default function AdminPanel() {
       setLoading(true);
       const usersRes = await axios.get(`${API}/users/`);
       setUsers(usersRes.data || []);
-    } catch (err) { console.error("Lỗi tải dữ liệu:", err); } finally { setLoading(false); }
+
+      try {
+        const feedbacksRes = await axios.get(`${API}/feedback/`);
+        setFeedbacks(feedbacksRes.data || []);
+      } catch (fErr) {
+        console.error("Lỗi tải feedbacks:", fErr);
+      }
+    } catch (err) {
+      console.error("Lỗi tải dữ liệu:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -66,6 +79,9 @@ export default function AdminPanel() {
         <button onClick={() => setActiveTab("users")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "users" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
           <Users className="size-3.5" />Tài khoản ({users.length})
         </button>
+        <button onClick={() => setActiveTab("feedbacks")} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "feedbacks" ? "bg-[#00704A] text-white shadow-lg shadow-[#00704A]/20" : "text-white/40 hover:text-white/70"}`}>
+          <MessageSquare className="size-3.5" />Phản hồi ({feedbacks.length})
+        </button>
       </div>
 
       {/* TAB USERS */}
@@ -88,7 +104,7 @@ export default function AdminPanel() {
                   const role = ROLE_MAP[user.role_id] || ROLE_MAP[1];
                   return (
                     <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                      <td className="py-4 px-6">
+                       <td className="py-4 px-6">
                         <span className="text-xs font-bold text-white/50">#{user.id}</span>
                       </td>
                       <td className="py-4 px-4">
@@ -135,6 +151,69 @@ export default function AdminPanel() {
                     </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
+
+      {/* TAB FEEDBACKS */}
+      {activeTab === "feedbacks" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <div className="bg-white/5 rounded-3xl border border-white/10 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/[0.02]">
+                  <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-6">ID</th>
+                  <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Khách hàng</th>
+                  <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Danh mục</th>
+                  <th className="text-left text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-4">Nội dung phản hồi</th>
+                  <th className="text-center text-[10px] font-bold text-white/40 uppercase tracking-wider py-4 px-6">Thời gian gửi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {feedbacks.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-white/30 text-sm">
+                      Chưa nhận được phản hồi nào từ khách hàng
+                    </td>
+                  </tr>
+                ) : (
+                  feedbacks.map(fb => (
+                    <tr key={fb.id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="py-4 px-6">
+                        <span className="text-xs font-bold text-white/50">#{fb.id}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div>
+                          <div className="text-sm font-bold text-white">{fb.full_name || fb.username}</div>
+                          <div className="text-[10px] text-white/40 mt-0.5">{fb.email || "Không có email"}</div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#00704A]/20 text-[#00704A] border border-[#00704A]/30">
+                          {fb.category}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 max-w-sm">
+                        <div className="text-xs text-white/80 line-clamp-3 whitespace-pre-line bg-white/[0.02] p-3 rounded-xl border border-white/5">
+                          {fb.content}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-xs text-white/40">
+                          {new Date(fb.created_at).toLocaleString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

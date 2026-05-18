@@ -118,6 +118,7 @@ uploads/
 backend/uploads/
 database/.env
 .agents
+.agent
 graphify-out
 .claude
 .gemini/

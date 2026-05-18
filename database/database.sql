@@ -241,6 +241,23 @@ CREATE TABLE point_logs (
 CREATE INDEX idx_pl_user_date ON point_logs (user_id, created_at DESC);
 CREATE INDEX idx_pl_type      ON point_logs (point_type_id);
 
+-- 2.8 FEEDBACKS – Phản hồi ý kiến từ khách hàng
+-- UC: UC-13
+CREATE TABLE feedbacks (
+    id         SERIAL PRIMARY KEY,
+    user_id    INT          NOT NULL,
+    category   VARCHAR(100) NOT NULL,
+    content    TEXT         NOT NULL,
+    created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_feedbacks_user
+        FOREIGN KEY (user_id) REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE INDEX idx_feedbacks_user ON feedbacks (user_id);
+CREATE INDEX idx_feedbacks_date ON feedbacks (created_at DESC);
+
 -- ============================================================
 -- NHÓM 3: CẤU HÌNH TÍCH ĐIỂM
 -- UC: UC-24, UC-27
@@ -383,6 +400,7 @@ CREATE TRIGGER trg_audit_order_details  AFTER INSERT OR UPDATE OR DELETE ON orde
 CREATE TRIGGER trg_audit_rewards        AFTER INSERT OR UPDATE OR DELETE ON rewards        FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger();
 CREATE TRIGGER trg_audit_point_logs     AFTER INSERT OR UPDATE OR DELETE ON point_logs     FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger();
 CREATE TRIGGER trg_audit_loyalty_config AFTER INSERT OR UPDATE OR DELETE ON loyalty_config FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger();
+CREATE TRIGGER trg_audit_feedbacks      AFTER INSERT OR UPDATE OR DELETE ON feedbacks      FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger();
 
 -- ============================================================
 -- GHI CHÚ SỬ DỤNG
