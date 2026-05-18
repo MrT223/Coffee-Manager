@@ -22,6 +22,14 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "YOUR_SUPER_SECRET_KEY_HERE"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
+    # SMTP Configuration
+    SMTP_SERVER: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_SENDER: str = ""
+    ADMIN_EMAIL: str = ""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not self.SQLALCHEMY_DATABASE_URI:
