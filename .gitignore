@@ -43,8 +43,7 @@ desktop.ini
 # Node (frontend)
 # ============================================================
 node_modules/
-package.json
-package-lock.json
+frontend/dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -55,10 +54,72 @@ yarn-error.log*
 *.log
 *.tmp
 validate_output.txt
-validate_db.py
+scratch/
+docs/
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ============================================================
+# Virtual Environment
+# ============================================================
+venv/
+.venv/
+env/
+
+# ============================================================
+# Environment Variables
+# ============================================================
+.env
+!.env.example
+
+# ============================================================
+# IDE
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# OS
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# Node (frontend)
+# ============================================================
+node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================================
+# Misc
+# ============================================================
+*.log
+*.tmp
+validate_output.txt
+scratch/
 docs/
 uploads/
+backend/uploads/
+database/.env
 .agents
 graphify-out
 .claude
+.gemini/
 skills-lock.json
+serviceAccountKey.json
