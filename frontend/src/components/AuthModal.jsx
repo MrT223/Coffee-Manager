@@ -259,7 +259,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                       
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-white/30" />
-                        <input name="username" type="tel" value={formData.username} onChange={handleChange} placeholder="Số điện thoại" className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" required />
+                        <input name="username" type={isLogin ? "text" : "tel"} value={formData.username} onChange={handleChange} placeholder={isLogin ? "Số điện thoại hoặc Email" : "Số điện thoại"} className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#00704A]/50 focus:border-[#00704A] transition-all" required />
                       </div>
                       
                       {!isLogin && !isForgotPassword && (

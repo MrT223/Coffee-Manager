@@ -125,9 +125,13 @@ def pos_register(req: AuthRequest, db: Session = Depends(get_db), current_user =
 @router.post("/login")
 def login(req: AuthRequest, db: Session = Depends(get_db)):
     db_user = crud_user.get_user_by_username(db, username=req.username)
-    
+    if not db_user:
+        # Thử tìm theo email nếu không tìm thấy theo username (SĐT)
+        from database.models.user import User
+        db_user = db.query(User).filter(User.email == req.username).first()
+        
     if not db_user or not security.verify_password(req.password, db_user.password):
-        raise HTTPException(status_code=400, detail="Sai số điện thoại hoặc mật khẩu")
+        raise HTTPException(status_code=400, detail="Thông tin đăng nhập không chính xác")
     
     access_token = security.create_access_token(data={"sub": db_user.username})
     
