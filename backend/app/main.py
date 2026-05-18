@@ -20,7 +20,7 @@ from app.routes.loyalty import router as loyalty_router
 from app.routes.user_reward import router as user_reward_router
 from app.routes.profile import router as profile_router
 from app.routes.combo import router as combo_router
-from app.routes.feedback import router as feedback_router
+from app.routes.vnpay import router as vnpay_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -29,7 +29,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://falsify-fancy-barometer.ngrok-free.dev"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,7 +50,7 @@ app.include_router(loyalty_router, prefix="/api/loyalty", tags=["Loyalty"])
 app.include_router(user_reward_router, prefix="/api/user-rewards", tags=["UserRewards"])
 app.include_router(profile_router, prefix="/api/profile", tags=["Profile"])
 app.include_router(combo_router, prefix="/api/combos", tags=["Combos"])
-app.include_router(feedback_router, prefix="/api/feedback", tags=["Feedback"])
+app.include_router(vnpay_router, prefix="/api/vnpay", tags=["VNPay"])
 
 @app.get("/")
 def root():

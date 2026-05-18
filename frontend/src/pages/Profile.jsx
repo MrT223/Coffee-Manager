@@ -1,12 +1,10 @@
-/* eslint-disable no-unused-vars */
 // src/pages/Profile.jsx
 import React, { useState, useEffect, useRef } from "react";
 import {
   User, ShoppingBag, Star, Calendar, Shield,
   Loader2, Lock, Eye, EyeOff, ChevronDown, ChevronUp,
   Package, Clock, CheckCircle2, XCircle, Truck,
-  Coffee, ArrowUpRight, Hash, Receipt, Camera, PartyPopper, Cake,
-  MessageSquare, Send
+  Coffee, ArrowUpRight, Hash, Receipt, Camera, PartyPopper, Cake
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -254,7 +252,6 @@ export default function Profile({ currentUser, onUserUpdate }) {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const birthdayInputRef = useRef(null);
 
-
   useEffect(() => {
     if (!currentUser?.id) return;
     const fetchAll = async () => {
@@ -341,7 +338,6 @@ export default function Profile({ currentUser, onUserUpdate }) {
       toast.error(err.response?.data?.detail || "Không thể hủy đơn hàng");
     }
   };
-
 
   if (!currentUser) {
     return (
@@ -514,37 +510,33 @@ export default function Profile({ currentUser, onUserUpdate }) {
         </button>
       </div>
 
-      {/* ── Orders List ──────────── */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="space-y-3"
-        >
-          {(() => {
-            const filtered = activeTab === "pending"
-              ? orders.filter((o) => [1, 2, 3].includes(o.status_id))
-              : orders;
+      {/* ── Orders List ──────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-3"
+      >
+        {(() => {
+          const filtered = activeTab === "pending"
+            ? orders.filter((o) => [1, 2, 3].includes(o.status_id))
+            : orders;
 
-            if (filtered.length === 0) {
-              return (
-                <div className="bg-white/5 rounded-3xl border border-white/10 p-12 text-center">
-                  <Package className="size-12 text-white/10 mx-auto mb-3" />
-                  <p className="text-white/30 text-sm font-medium">
-                    {activeTab === "pending" ? "Không có đơn hàng đang xử lý" : "Chưa có đơn hàng nào"}
-                  </p>
-                </div>
-              );
-            }
+          if (filtered.length === 0) {
+            return (
+              <div className="bg-white/5 rounded-3xl border border-white/10 p-12 text-center">
+                <Package className="size-12 text-white/10 mx-auto mb-3" />
+                <p className="text-white/30 text-sm font-medium">
+                  {activeTab === "pending" ? "Không có đơn hàng đang xử lý" : "Chưa có đơn hàng nào"}
+                </p>
+              </div>
+            );
+          }
 
-            return filtered.map((order) => (
-              <OrderCard key={order.id} order={order} onCancel={handleCancelOrder} />
-            ));
-          })()}
-        </motion.div>
-      </AnimatePresence>
+          return filtered.map((order) => (
+            <OrderCard key={order.id} order={order} onCancel={handleCancelOrder} />
+          ));
+        })()}
+      </motion.div>
 
       {/* ── Password Modal ────────────────────── */}
       <AnimatePresence>

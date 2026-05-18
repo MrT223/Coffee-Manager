@@ -22,13 +22,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "YOUR_SUPER_SECRET_KEY_HERE"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
-    # SMTP Configuration
-    SMTP_SERVER: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USERNAME: str = ""
-    SMTP_PASSWORD: str = ""
-    SMTP_SENDER: str = ""
-    ADMIN_EMAIL: str = ""
+    # VNPay Sandbox Config
+    VNPAY_TMN_CODE: str = "2QX8WY5Z"
+    VNPAY_HASH_SECRET: str = "GUWSWREIPXASZREONYRYTMYAVNLAOVCO"
+    VNPAY_PAYMENT_URL: str = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+    VNPAY_RETURN_URL: str = "http://localhost:5173/payment-return"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -38,6 +36,5 @@ class Settings(BaseSettings):
     class Config:
         case_sensitive = True
         env_file = str(env_path) if env_path.exists() else ".env"
-        extra = "ignore"
 
 settings = Settings()

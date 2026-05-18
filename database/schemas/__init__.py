@@ -10,5 +10,4 @@ from database.schemas.point_log import PointLogBase, PointLogRead
 from database.schemas.user_reward import UserRewardBase, UserRewardCreate, UserRewardRead
 from database.schemas.combo import ComboBase, ComboCreate, ComboRead, ComboItemCreate, ComboItemRead
 from database.schemas.member_tier import MemberTierBase, MemberTierRead
-from database.schemas.feedback import FeedbackBase, FeedbackCreate, FeedbackRead
 
