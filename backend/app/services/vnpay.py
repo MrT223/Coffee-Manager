@@ -6,7 +6,7 @@ Dựa trên tài liệu: https://sandbox.vnpayment.vn/apis/docs/thanh-toan-pay/p
 import hashlib
 import hmac
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def build_vnpay_url(vnp_params: dict, secret_key: str, vnp_url: str) -> str:
@@ -59,14 +59,17 @@ def create_payment_url(
     Returns:
         tuple: (payment_url, vnp_txn_ref)
     """
+    gmt7 = timezone(timedelta(hours=7))
+    now_gmt7 = datetime.now(timezone.utc).astimezone(gmt7)
+
     if vnp_txn_ref is None:
-        vnp_txn_ref = f"{order_id}_{int(datetime.now().timestamp())}"
+        vnp_txn_ref = f"{order_id}_{int(now_gmt7.timestamp())}"
     
     # Số tiền phải nhân 100 (loại bỏ phần thập phân)
     vnp_amount = int(float(amount) * 100)
     
-    create_date = datetime.now().strftime('%Y%m%d%H%M%S')
-    expire_date = (datetime.now() + timedelta(minutes=15)).strftime('%Y%m%d%H%M%S')
+    create_date = now_gmt7.strftime('%Y%m%d%H%M%S')
+    expire_date = (now_gmt7 + timedelta(minutes=15)).strftime('%Y%m%d%H%M%S')
     
     # Chuẩn bị tham số
     input_data = {
