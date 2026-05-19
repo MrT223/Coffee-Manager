@@ -38,6 +38,7 @@ class OrderRead(OrderBase):
     order_date: datetime
     updated_at: datetime
     order_details: List[OrderDetailRead] = []
+    payment_url: Optional[str] = None
 
     class Config:
         from_attributes = True

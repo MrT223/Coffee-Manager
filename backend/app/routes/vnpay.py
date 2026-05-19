@@ -29,6 +29,7 @@ class VNPayCreateRequest(BaseModel):
     items: List = []
     combo_items: List = []
     user_reward_id: Optional[int] = None
+    bank_code: Optional[str] = None
 
 
 class VNPayCreateResponse(BaseModel):
@@ -100,6 +101,7 @@ def create_vnpay_payment(
         amount=float(db_order.total_price),
         order_info=order_info,
         ip_addr=client_ip,
+        bank_code=request_data.bank_code,
     )
     
     # Cập nhật vnp_txn_ref vào đơn hàng
