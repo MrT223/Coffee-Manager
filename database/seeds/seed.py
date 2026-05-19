@@ -7,8 +7,10 @@ from sqlalchemy.orm import Session
 from database.connection import SessionLocal, engine, Base
 from database.models import (
     Role, ProductStatus, OrderStatus,
-    RewardType, PointType, LoyaltyConfig, MemberTier
+    RewardType, PointType, LoyaltyConfig, MemberTier,
+    User, Category, Product
 )
+from app.security import get_password_hash
 
 
 # ---------- Lookup Data ----------
@@ -47,6 +49,31 @@ MEMBER_TIERS = [
     {"tier_name": "Bạc", "tier_order": 2, "exp_required": 10000, "discount_percent": 2.0, "icon": "🥈", "color": "#C0C0C0"},
     {"tier_name": "Vàng", "tier_order": 3, "exp_required": 30000, "discount_percent": 2.0, "icon": "🥇", "color": "#FFD700"},
     {"tier_name": "Kim Cương", "tier_order": 4, "exp_required": 100000, "discount_percent": 5.0, "icon": "💎", "color": "#B9F2FF"},
+]
+
+USERS = [
+    {"username": "admin", "password_raw": "admin123", "role_id": 3, "total_points": 0, "total_exp": 0, "tier_id": 1, "is_active": True},
+    {"username": "staff", "password_raw": "staff123", "role_id": 2, "total_points": 0, "total_exp": 0, "tier_id": 1, "is_active": True},
+    {"username": "khachhang", "password_raw": "khach123", "role_id": 1, "total_points": 5000, "total_exp": 5000, "tier_id": 1, "is_active": True},
+]
+
+CATEGORIES = [
+    {"id": 1, "category_name": "Cà phê"},
+    {"id": 2, "category_name": "Trà sữa"},
+    {"id": 3, "category_name": "Trà trái cây"},
+    {"id": 4, "category_name": "Sinh tố & Nước ép"},
+    {"id": 5, "category_name": "Đồ ăn vặt"},
+]
+
+PRODUCTS = [
+    {"name": "Cà phê đen đá", "price": 25000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1514432324607-a2ce78c73c16?q=80&w=1470&auto=format&fit=crop"},
+    {"name": "Cà phê sữa đá", "price": 29000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1620054707328-973e80c44c50?q=80&w=1470&auto=format&fit=crop"},
+    {"name": "Bạc xỉu", "price": 35000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1572442388796-11668a67e53d?q=80&w=1478&auto=format&fit=crop"},
+    {"name": "Trà sữa trân châu", "price": 35000, "category_id": 2, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1622283088737-1249b29e616c?q=80&w=1470&auto=format&fit=crop"},
+    {"name": "Trà đào cam sả", "price": 40000, "category_id": 3, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=1470&auto=format&fit=crop"},
+    {"name": "Sinh tố bơ", "price": 45000, "category_id": 4, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1626895316335-50269e94443a?q=80&w=1470&auto=format&fit=crop"},
+    {"name": "Nước ép cam", "price": 39000, "category_id": 4, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1600271886742-f049cd451bba?q=80&w=1587&auto=format&fit=crop"},
+    {"name": "Hạt dưa", "price": 15000, "category_id": 5, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1596649282361-0498b813b194?q=80&w=1328&auto=format&fit=crop"},
 ]
 
 
@@ -110,6 +137,23 @@ def run_seed():
 
         print("Seeding loyalty_config...")
         seed_loyalty_config(db)
+
+        print("Seeding users...")
+        for user_data in USERS:
+            existing = db.query(User).filter(User.username == user_data["username"]).first()
+            if not existing:
+                hashed_pw = get_password_hash(user_data["password_raw"])
+                u = dict(user_data)
+                del u["password_raw"]
+                u["password"] = hashed_pw
+                db.add(User(**u))
+        db.commit()
+
+        print("Seeding categories...")
+        seed_table(db, Category, CATEGORIES, "category_name")
+
+        print("Seeding products...")
+        seed_table(db, Product, PRODUCTS, "name")
 
         print("Seed completed successfully!")
     except Exception as e:
