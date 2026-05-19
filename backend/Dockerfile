@@ -1,17 +1,25 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /project
 
-# Install system dependencies for database connection and building dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
-COPY . .
+# Copy both backend and database directories
+COPY backend/ ./backend/
+COPY database/ ./database/
+
+# Set Python path so "from database.xxx" resolves to /project/database/
+ENV PYTHONPATH=/project
+
+WORKDIR /project/backend
 
 EXPOSE 8000
 
