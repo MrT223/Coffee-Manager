@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-import { Coffee, CreditCard, Receipt, Smartphone, Clock } from "lucide-react";
+import { Coffee, CreditCard, Receipt, Smartphone, Clock, Copy } from "lucide-react";
 
 const API = "/api";
 const fmt = (n) => new Intl.NumberFormat("vi-VN").format(n);
@@ -47,9 +47,11 @@ export default function CustomerDisplay() {
     return () => clearInterval(interval);
   }, []);
 
-  // Generate a fake bank QR string
+  // Generate a bank QR or VNPAY payment gateway QR
   const qrValue = order
-    ? `https://img.vietqr.io/image/970422-1234567890-compact.jpg?amount=${order.total_price}&addInfo=DH${order.id}`
+    ? (order.payment_method === "VNPAY" && order.payment_url
+        ? `https://quickchart.io/qr?text=${encodeURIComponent(order.payment_url)}&size=220&margin=2`
+        : `https://img.vietqr.io/image/970422-1234567890-compact.jpg?amount=${order.total_price}&addInfo=DH${order.id}`)
     : "";
 
   // Group products by category
@@ -159,21 +161,81 @@ export default function CustomerDisplay() {
                 </div>
               </div>
 
-              {/* Right - QR Code */}
+              {/* Right - QR Code / VNPAY Test Card details */}
               <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm flex flex-col items-center justify-center">
-                <h2 className="text-lg font-extrabold mb-4 flex items-center gap-2"><Smartphone className="size-5 text-[#00704A]" /> Quét mã để thanh toán</h2>
-                <div className="bg-white p-4 rounded-2xl mb-4 flex items-center justify-center">
-                  <img
-                    src={qrValue}
-                    alt="Bank QR Code"
-                    className="w-[220px] h-[220px] object-contain rounded-xl"
-                  />
-                </div>
-                <p className="text-white/40 text-xs text-center max-w-[250px]">
-                  Quý khách vui lòng quét mã QR bằng ứng dụng ngân hàng để hoàn tất thanh toán
-                </p>
-                <div className="mt-4 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                  <span className="text-amber-400 text-xs font-bold flex items-center gap-1.5"><Clock className="size-3.5" /> Chờ xác nhận từ nhân viên...</span>
+                {order.payment_method === "VNPAY" ? (
+                  <div className="w-full flex flex-col items-center">
+                    <h2 className="text-base font-extrabold mb-3 flex items-center gap-2 text-sky-400">
+                      <CreditCard className="size-5 text-sky-400" /> Thanh toán qua Thẻ ATM / VNPAY
+                    </h2>
+                    
+                    <div className="flex gap-4 items-center mb-4 w-full justify-center">
+                      <div className="bg-white p-2.5 rounded-xl flex-shrink-0 flex items-center justify-center shadow-lg">
+                        <img
+                          src={qrValue}
+                          alt="VNPay QR Code"
+                          className="w-[120px] h-[120px] object-contain rounded-lg"
+                        />
+                      </div>
+                      <div className="text-left text-xs text-white/60 space-y-1">
+                        <p className="text-[10px] font-black text-sky-300 uppercase tracking-widest">Quét cổng thanh toán</p>
+                        <p className="leading-relaxed">Quý khách quét mã QR để mở cổng thanh toán trên điện thoại.</p>
+                      </div>
+                    </div>
+
+                    {/* NCB ATM Sandbox Mock Card */}
+                    <div className="w-full bg-gradient-to-tr from-[#1E3932] to-[#0d6141] border border-white/10 p-4 rounded-2xl shadow-xl relative overflow-hidden text-left mb-4">
+                      {/* Chip & Logo */}
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="w-8 h-5.5 bg-amber-400/20 rounded-md border border-amber-400/40 relative overflow-hidden">
+                          <div className="absolute inset-y-0 left-1/3 w-px bg-amber-400/30" />
+                          <div className="absolute inset-y-0 left-2/3 w-px bg-amber-400/30" />
+                          <div className="absolute inset-x-0 top-1/2 h-px bg-amber-400/30" />
+                        </div>
+                        <span className="text-[9px] font-black tracking-widest text-[#00704A] bg-white px-1.5 py-0.5 rounded">NCB TEST CARD</span>
+                      </div>
+
+                      {/* Card Number */}
+                      <div className="mb-2">
+                        <span className="text-[8px] text-white/30 font-bold block uppercase tracking-wider">Số thẻ ATM</span>
+                        <span className="text-sm font-mono font-bold tracking-widest text-white">9704 1985 2619 1432 198</span>
+                      </div>
+
+                      {/* Bottom Row */}
+                      <div className="grid grid-cols-3 gap-2 text-[10px]">
+                        <div>
+                          <span className="text-[7px] text-white/30 font-bold block uppercase tracking-wider">Chủ thẻ</span>
+                          <span className="font-mono font-bold uppercase truncate block text-white">NGUYEN VAN A</span>
+                        </div>
+                        <div>
+                          <span className="text-[7px] text-white/30 font-bold block uppercase tracking-wider">Ngày phát</span>
+                          <span className="font-mono font-bold text-white">07/15</span>
+                        </div>
+                        <div>
+                          <span className="text-[7px] text-white/30 font-bold block uppercase tracking-wider">Mật khẩu OTP</span>
+                          <span className="font-mono font-extrabold text-amber-300">123456</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full flex flex-col items-center">
+                    <h2 className="text-lg font-extrabold mb-4 flex items-center gap-2"><Smartphone className="size-5 text-[#00704A]" /> Quét mã để thanh toán</h2>
+                    <div className="bg-white p-4 rounded-2xl mb-4 flex items-center justify-center">
+                      <img
+                        src={qrValue}
+                        alt="Bank QR Code"
+                        className="w-[220px] h-[220px] object-contain rounded-xl"
+                      />
+                    </div>
+                    <p className="text-white/40 text-xs text-center max-w-[250px]">
+                      Quý khách vui lòng quét mã QR bằng ứng dụng ngân hàng để hoàn tất thanh toán
+                    </p>
+                  </div>
+                )}
+                
+                <div className="mt-2 w-full px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center">
+                  <span className="text-amber-400 text-xs font-bold flex items-center justify-center gap-1.5"><Clock className="size-3.5" /> Chờ xác nhận từ nhân viên...</span>
                 </div>
               </div>
             </div>

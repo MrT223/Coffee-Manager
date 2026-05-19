@@ -1,6 +1,6 @@
 // src/pages/Checkout.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { CheckCircle2, ChevronLeft, Loader2, CreditCard, Gift, Ticket, X, QrCode, Banknote, Smartphone } from "lucide-react";
+import { CheckCircle2, ChevronLeft, Loader2, CreditCard, Gift, Ticket, X, QrCode, Banknote, Smartphone, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -23,6 +23,22 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
   const pollingRef = useRef(null);
   const [countdown, setCountdown] = useState(900); // 15 phút = 900 giây
   const countdownRef = useRef(null);
+  const [vnpayBankCode, setVnpayBankCode] = useState("NCB");
+
+  // Tự động mở cổng thanh toán VNPay khi có paymentUrl
+  useEffect(() => {
+    if (showQR && paymentUrl) {
+      const newWindow = window.open(paymentUrl, "_blank");
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === "undefined") {
+        toast.focus ? toast.error("Trình duyệt đã chặn cửa sổ bật lên. Vui lòng bấm vào nút thanh toán bên dưới!") : null;
+      }
+    }
+  }, [showQR, paymentUrl]);
+
+  const handleCopy = (text, label) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`Đã sao chép ${label}!`);
+  };
 
   useEffect(() => {
     if (currentUser?.id) {
@@ -161,6 +177,7 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
             quantity: item.qty
           })),
           user_reward_id: selectedReward ? selectedReward.id : null,
+          bank_code: vnpayBankCode || null,
         };
 
         const res = await axios.post(
@@ -261,17 +278,17 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
               </div>
             </div>
           ) : (
-            // ============ HIỂN THỊ QR ============
-            <div className="relative z-10">
+            // ============ HIỂN THỊ THẺ ATM VNPAY ============
+            <div className="relative z-10 text-white">
               {/* Header */}
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="bg-sky-500/20 p-2.5 rounded-xl">
-                    <QrCode className="size-5 text-sky-400" />
+                    <CreditCard className="size-5 text-sky-400" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-white tracking-tight">Quét mã QR để thanh toán</h2>
-                    <p className="text-white/40 text-[10px] font-bold mt-0.5 uppercase tracking-widest">Powered by VNPay</p>
+                    <h2 className="text-lg font-black tracking-tight">Thanh toán qua Thẻ ATM</h2>
+                    <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest mt-0.5">Powered by VNPay Sandbox</p>
                   </div>
                 </div>
                 <button 
@@ -282,75 +299,147 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
                 </button>
               </div>
 
-              {/* QR Code */}
-              <div className="flex flex-col items-center mb-8">
-                <div className="bg-white p-5 rounded-3xl shadow-2xl shadow-black/20 mb-5 flex items-center justify-center">
-                  <img
-                    src={`https://quickchart.io/qr?text=${encodeURIComponent(paymentUrl)}&size=220&margin=2`}
-                    alt="VNPay QR Code"
-                    className="w-[220px] h-[220px] object-contain rounded-xl"
-                  />
-                </div>
-                
-                {/* Countdown timer */}
-                <div className="flex items-center gap-2 text-xs font-bold">
-                  <div className={`w-2 h-2 rounded-full ${countdown > 60 ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400 animate-ping'}`} />
-                  <span className={countdown > 60 ? 'text-white/60' : 'text-amber-400'}>
-                    Mã QR hết hạn sau {formatCountdown(countdown)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Hướng dẫn */}
-              <div className="space-y-3 mb-8">
-                {[
-                  { step: "1", text: "Mở ứng dụng Ngân hàng hoặc Ví điện tử" },
-                  { step: "2", text: "Quét mã QR ở trên" },
-                  { step: "3", text: "Xác nhận thanh toán trên điện thoại" },
-                ].map(item => (
-                  <div key={item.step} className="flex items-center gap-4 p-3 bg-white/5 rounded-xl border border-white/5">
-                    <div className="w-7 h-7 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-400 text-xs font-black flex-shrink-0">
-                      {item.step}
-                    </div>
-                    <span className="text-white/70 text-xs font-medium">{item.text}</span>
+              {vnpayBankCode === "NCB" ? (
+                <>
+                  {/* Hướng dẫn ngắn cho NCB */}
+                  <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-2xl mb-5 text-[11px] text-sky-200 leading-relaxed font-semibold">
+                    <span className="font-extrabold text-sky-300">Hướng dẫn:</span> Bạn hãy sao chép thông tin Thẻ Test dưới đây, sau đó bấm nút <span className="text-amber-300 font-extrabold uppercase">"Mở cổng VNPAY"</span> để tiến hành thanh toán và nhập OTP <span className="text-amber-300 font-extrabold">123456</span>.
                   </div>
-                ))}
-              </div>
 
-              {/* Thông tin đơn hàng */}
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10 mb-6">
-                <div className="flex justify-between text-xs font-bold mb-3">
-                  <span className="text-white/40">Mã đơn hàng</span>
-                  <span className="text-white">#{vnpayOrderId}</span>
-                </div>
-                <div className="flex justify-between text-xs font-bold mb-3">
-                  <span className="text-white/40">Mã giao dịch</span>
-                  <span className="text-white font-mono text-[10px]">{vnpTxnRef}</span>
-                </div>
-                <div className="h-px bg-white/10 my-3" />
-                <div className="flex justify-between text-sm font-black">
-                  <span className="text-white">Tổng thanh toán</span>
-                  <span className="text-amber-300">{new Intl.NumberFormat('vi-VN').format(finalTotal)} đ</span>
-                </div>
-              </div>
+                  {/* NCB ATM Sandbox Mock Card */}
+                  <div className="bg-gradient-to-tr from-[#1E3932] to-[#0d6141] border border-white/10 p-5 rounded-[1.8rem] shadow-2xl relative overflow-hidden mb-6">
+                    {/* Chip & Logo */}
+                    <div className="flex justify-between items-center mb-6">
+                      <div className="w-10 h-7 bg-amber-400/20 rounded-md border border-amber-400/40 relative overflow-hidden">
+                        <div className="absolute inset-y-0 left-1/3 w-px bg-amber-400/30" />
+                        <div className="absolute inset-y-0 left-2/3 w-px bg-amber-400/30" />
+                        <div className="absolute inset-x-0 top-1/2 h-px bg-amber-400/30" />
+                      </div>
+                      <span className="text-xs font-black tracking-widest text-[#00704A] bg-white px-2 py-0.5 rounded-lg">NCB TEST CARD</span>
+                    </div>
 
-              {/* Trạng thái chờ */}
-              <div className="flex items-center justify-center gap-3 text-white/40">
-                <Loader2 className="size-4 animate-spin" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Đang chờ thanh toán...</span>
-              </div>
+                    {/* Card Number */}
+                    <div className="mb-4">
+                      <span className="text-[9px] text-white/30 font-bold block uppercase tracking-wider">Số thẻ ATM</span>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <span className="text-base font-mono font-bold tracking-widest">9704 1985 2619 1432 198</span>
+                        <button 
+                          onClick={() => handleCopy("9704198526191432198", "Số thẻ")}
+                          className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors"
+                          title="Sao chép số thẻ"
+                        >
+                          <Copy className="size-3.5" />
+                        </button>
+                      </div>
+                    </div>
 
-              {/* Link mở trực tiếp (mobile) */}
-              <div className="mt-6 text-center">
+                    {/* Bottom Row */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <span className="text-[8px] text-white/30 font-bold block uppercase tracking-wider">Tên chủ thẻ</span>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className="text-[11px] font-mono font-bold uppercase truncate">NGUYEN VAN A</span>
+                          <button 
+                            onClick={() => handleCopy("NGUYEN VAN A", "Tên chủ thẻ")}
+                            className="p-1 bg-white/5 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors ml-1"
+                          >
+                            <Copy className="size-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[8px] text-white/30 font-bold block uppercase tracking-wider">Ngày phát hành</span>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className="text-[11px] font-mono font-bold">07/15</span>
+                          <button 
+                            onClick={() => handleCopy("07/15", "Ngày phát hành")}
+                            className="p-1 bg-white/5 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors ml-1"
+                          >
+                            <Copy className="size-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[8px] text-white/30 font-bold block uppercase tracking-wider">Mật khẩu OTP</span>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className="text-[11px] font-mono font-extrabold text-amber-300">123456</span>
+                          <button 
+                            onClick={() => handleCopy("123456", "Mã OTP")}
+                            className="p-1 bg-white/5 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors ml-1"
+                          >
+                            <Copy className="size-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Hướng dẫn ngắn cho Tự chọn */}
+                  <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-2xl mb-5 text-[11px] text-sky-200 leading-relaxed font-semibold">
+                    <span className="font-extrabold text-sky-300">Hướng dẫn:</span> Bấm nút <span className="text-amber-300 font-extrabold uppercase">"Mở cổng VNPAY"</span>, sau đó bạn có thể tự do chọn ngân hàng mong muốn, điền thông tin thẻ ATM hoặc thẻ quốc tế của bạn để hoàn tất thanh toán.
+                  </div>
+
+                  {/* Generic VNPAY Card View */}
+                  <div className="bg-gradient-to-tr from-[#1E3932] via-[#10563b] to-[#1E3932] border border-white/10 p-5 rounded-[1.8rem] shadow-2xl relative overflow-hidden mb-6 flex flex-col justify-between h-[165px]">
+                    <div className="flex justify-between items-center">
+                      <div className="w-10 h-7 bg-white/10 rounded-md border border-white/20 relative overflow-hidden" />
+                      <span className="text-xs font-black tracking-widest text-[#00704A] bg-white px-2 py-0.5 rounded-lg">SELECT BANK</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-white/30 font-bold block uppercase tracking-wider">Loại hình thanh toán</span>
+                      <span className="text-sm font-bold tracking-wide text-white mt-1 block">TỰ CHỌN NGÂN HÀNG TRÊN CỔNG VNPAY</span>
+                    </div>
+                    <div className="flex justify-between items-end text-[10px] text-white/40">
+                      <span>ATM / VISA / MASTERCARD / JCB</span>
+                      <span className="font-mono text-[9px] bg-white/5 border border-white/10 px-2 py-0.5 rounded-md text-white/80">SANDBOX</span>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Launcher Button */}
+              <div className="mb-5">
                 <a
                   href={paymentUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sky-400 text-[10px] font-bold uppercase tracking-widest hover:text-sky-300 transition-colors"
+                  className="w-full py-4 bg-amber-400 hover:bg-amber-500 text-[#1E3932] font-black rounded-2xl text-xs flex items-center justify-center gap-2.5 shadow-xl shadow-amber-400/20 active:scale-[0.98] transition-all uppercase tracking-widest"
                 >
-                  <Smartphone className="size-3" />
-                  Hoặc bấm vào đây để thanh toán trực tiếp
+                  <Smartphone className="size-4.5" />
+                  Mở cổng thanh toán VNPAY
                 </a>
+              </div>
+
+              {/* Order Info & Status */}
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5 mb-5 space-y-2">
+                <div className="flex justify-between text-[11px] font-bold">
+                  <span className="text-white/40">Mã đơn hàng</span>
+                  <span className="text-white font-mono">#{vnpayOrderId}</span>
+                </div>
+                <div className="flex justify-between text-[11px] font-bold">
+                  <span className="text-white/40">Mã giao dịch</span>
+                  <span className="text-white font-mono text-[9px] truncate max-w-[150px]">{vnpTxnRef}</span>
+                </div>
+                <div className="h-px bg-white/10 my-1" />
+                <div className="flex justify-between text-xs font-black">
+                  <span className="text-white">Tổng số tiền</span>
+                  <span className="text-amber-300">{new Intl.NumberFormat('vi-VN').format(finalTotal)} đ</span>
+                </div>
+              </div>
+
+              {/* Waiting status & Countdown */}
+              <div className="flex flex-col items-center gap-2 mt-4">
+                <div className="flex items-center gap-2 text-white/40 text-[10px] uppercase font-bold tracking-widest">
+                  <Loader2 className="size-3.5 animate-spin text-sky-400" />
+                  <span>Đang chờ cổng thanh toán phản hồi...</span>
+                </div>
+                <div className="text-[10px] text-white/30 font-bold">
+                  Hết hạn sau {formatCountdown(countdown)}
+                </div>
               </div>
             </div>
           )}
@@ -461,7 +550,7 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
         {/* Payment Method Selection */}
         <div className="mb-10">
           <h3 className="text-[10px] font-black text-white/60 mb-4 uppercase tracking-widest">Phương thức thanh toán</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             {/* Tiền mặt */}
             <button
               onClick={() => setPaymentMethod("CASH")}
@@ -490,10 +579,38 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
               <div className={`p-2.5 rounded-xl w-fit mb-3 ${paymentMethod === "VNPAY" ? 'bg-sky-500/20' : 'bg-white/10'}`}>
                 <QrCode className={`size-5 ${paymentMethod === "VNPAY" ? 'text-sky-400' : 'text-white/40'}`} />
               </div>
-              <div className={`text-xs font-black ${paymentMethod === "VNPAY" ? 'text-sky-400' : 'text-white/60'}`}>VNPay QR</div>
-              <div className="text-[10px] text-white/30 mt-1 font-medium">Quét mã thanh toán</div>
+              <div className={`text-xs font-black ${paymentMethod === "VNPAY" ? 'text-sky-400' : 'text-white/60'}`}>Cổng VNPAY</div>
+              <div className="text-[10px] text-white/30 mt-1 font-medium">Thẻ ATM / Quốc Tế</div>
             </button>
           </div>
+
+          {/* Cấu hình thẻ ATM VNPAY */}
+          {paymentMethod === "VNPAY" && (
+            <div className="p-5 bg-white/5 border border-white/10 rounded-3xl space-y-3 animate-in fade-in-50 duration-200">
+              <div className="text-[9px] font-black text-sky-300 uppercase tracking-widest">Loại hình thẻ thanh toán</div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVnpayBankCode("NCB")}
+                  className={`py-2 px-3 rounded-xl text-[10px] font-extrabold transition-all border text-center ${vnpayBankCode === "NCB" ? "bg-sky-500/20 border-sky-400 text-sky-300" : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"}`}
+                >
+                  Thẻ Test NCB (Nhanh)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVnpayBankCode("")}
+                  className={`py-2 px-3 rounded-xl text-[10px] font-extrabold transition-all border text-center ${vnpayBankCode === "" ? "bg-sky-500/20 border-sky-400 text-sky-300" : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"}`}
+                >
+                  Nhập thủ công thẻ khác
+                </button>
+              </div>
+              <div className="text-[10px] text-white/40 leading-normal">
+                {vnpayBankCode === "NCB" 
+                  ? "✓ Hệ thống tự động chuyển hướng bạn tới trang thanh toán Thẻ ATM NCB Sandbox." 
+                  : "✓ Cho phép bạn tự chọn ngân hàng/thẻ ATM, Visa, Mastercard trên giao diện cổng VNPAY."}
+              </div>
+            </div>
+          )}
         </div>
 
         <button 

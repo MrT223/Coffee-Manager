@@ -51,6 +51,7 @@ def create_payment_url(
     order_info: str,
     ip_addr: str = "127.0.0.1",
     vnp_txn_ref: str = None,
+    bank_code: str = None,
 ) -> tuple[str, str]:
     """
     Tạo URL thanh toán VNPay.
@@ -84,6 +85,9 @@ def create_payment_url(
         "vnp_ExpireDate": expire_date,
     }
     
+    if bank_code:
+        input_data["vnp_BankCode"] = bank_code
+        
     payment_url = build_vnpay_url(input_data, vnp_hash_secret, vnp_payment_url)
     
     return payment_url, vnp_txn_ref

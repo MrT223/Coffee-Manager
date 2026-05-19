@@ -54,13 +54,84 @@ def create_pos_order(order_in: OrderCreate, db: Session = Depends(get_db), curre
     """API Tạo đơn hàng POS (Staff/Admin) - Nhân viên bán hàng tại quầy"""
     order_in.channel = "POS"
     order_in.staff_id = current_user.id
-    return controller_order.create_order(db, order_in)
+    order = controller_order.create_order(db, order_in)
+    
+    if order.payment_method == "VNPAY":
+        import uuid
+        order.vnp_txn_ref = f"POS_{order.id}_{uuid.uuid4().hex[:4]}"
+        db.commit()
+        db.refresh(order)
+        
+        order_info = f"Thanh toan don hang Coffee Manager POS #{order.id}"
+        from app.services.vnpay import create_payment_url
+        from app.config import settings
+        
+        client_ip = "127.0.0.1"
+        bank_code = "NCB" # Default to NCB for POS quick test card
+        
+        payment_url, _ = create_payment_url(
+            vnp_payment_url=settings.VNPAY_PAYMENT_URL,
+            vnp_tmn_code=settings.VNPAY_TMN_CODE,
+            vnp_hash_secret=settings.VNPAY_HASH_SECRET,
+            vnp_return_url=settings.VNPAY_RETURN_URL,
+            order_id=order.id,
+            amount=float(order.total_price),
+            order_info=order_info,
+            ip_addr=client_ip,
+            vnp_txn_ref=order.vnp_txn_ref,
+            bank_code=bank_code,
+        )
+        
+        order_read = OrderRead.from_orm(order)
+        order_read.payment_url = payment_url
+        return order_read
+        
+    return order
 
 @router.get("/pos/latest", response_model=Optional[OrderRead])
 def get_latest_pos_order(db: Session = Depends(get_db)):
     """API Lấy đơn POS mới nhất đang chờ thanh toán (Máy A polling - KHÔNG CẦN AUTH)"""
     order = controller_order.get_latest_pos_order(db)
-    return order
+    if not order:
+        return None
+        
+    order_read = OrderRead.from_orm(order)
+    
+    if order.payment_method == "VNPAY":
+        # 1. Ensure vnp_txn_ref is present
+        if not order.vnp_txn_ref:
+            import uuid
+            order.vnp_txn_ref = f"POS_{order.id}_{uuid.uuid4().hex[:4]}"
+            db.commit()
+            db.refresh(order)
+            order_read = OrderRead.from_orm(order)
+            
+        # 2. Generate payment URL
+        order_info = f"Thanh toan don hang Coffee Manager POS #{order.id}"
+        from app.services.vnpay import create_payment_url
+        from app.config import settings
+        
+        client_ip = "127.0.0.1"
+        
+        # Check if we have specific bank code or default to NCB for quick test card scanning on POS
+        # (This can also be customized by cashier)
+        bank_code = "NCB" 
+        
+        payment_url, _ = create_payment_url(
+            vnp_payment_url=settings.VNPAY_PAYMENT_URL,
+            vnp_tmn_code=settings.VNPAY_TMN_CODE,
+            vnp_hash_secret=settings.VNPAY_HASH_SECRET,
+            vnp_return_url=settings.VNPAY_RETURN_URL,
+            order_id=order.id,
+            amount=float(order.total_price),
+            order_info=order_info,
+            ip_addr=client_ip,
+            vnp_txn_ref=order.vnp_txn_ref,
+            bank_code=bank_code,
+        )
+        order_read.payment_url = payment_url
+        
+    return order_read
 
 @router.put("/pos/{order_id}/confirm", response_model=OrderRead)
 def confirm_pos_payment(order_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_staff)):

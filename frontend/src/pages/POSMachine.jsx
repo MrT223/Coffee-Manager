@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Search, Plus, Minus, Trash2, LogOut, ShoppingCart, BarChart3, ClipboardList, Coffee, Phone, CheckCircle, X, ChevronDown, Receipt, TrendingUp, Flame, Users, Filter } from "lucide-react";
+import { Search, Plus, Minus, Trash2, LogOut, ShoppingCart, BarChart3, ClipboardList, Coffee, Phone, CheckCircle, X, ChevronDown, Receipt, TrendingUp, Flame, Users, Filter, Copy, CreditCard } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Legend } from "recharts";
 import { toast } from "react-hot-toast";
 
@@ -76,6 +76,13 @@ export default function POSMachine() {
   const [customerUser, setCustomerUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [activeVnpayOrder, setActiveVnpayOrder] = useState(null);
+
+  const handleCopy = (text, label) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`Đã sao chép ${label}!`);
+  };
 
   // Report state
   const [reportData, setReportData] = useState({ daily_chart: [], top_products: [], summary: { total_revenue: 0, total_orders: 0, total_products_sold: 0 } });
@@ -158,13 +165,20 @@ export default function POSMachine() {
         user_id: customerUser?.id || null,
         items: ticket.map(i => ({ product_id: i.id, quantity: i.qty })),
         channel: "POS",
-        staff_id: currentUser.id
+        staff_id: currentUser.id,
+        payment_method: paymentMethod
       };
-      await axios.post(`${API}/orders/pos`, body, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${API}/orders/pos`, body, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Đã tạo đơn hàng POS!");
+      
+      if (paymentMethod === "VNPAY") {
+        setActiveVnpayOrder(res.data);
+      }
+
       setTicket([]);
       setCustomerPhone("");
       setCustomerUser(null);
+      setPaymentMethod("CASH");
       // Refresh products
       const prodRes = await axios.get(`${API}/products/`);
       setProducts(prodRes.data || []);
@@ -351,6 +365,29 @@ export default function POSMachine() {
                   </div>
                 ))}
               </div>
+              {/* Payment Method Selector */}
+              <div className="px-4 py-3 border-t border-white/5 bg-[#1E3932]/40 space-y-2">
+                <div className="text-white/40 text-[9px] font-bold uppercase tracking-wider">Phương thức thanh toán</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setPaymentMethod("CASH")}
+                    className={`py-2 rounded-xl text-[11px] font-bold transition-all border ${paymentMethod === "CASH" ? "bg-[#00704A] border-[#00704A] text-white shadow-md" : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"}`}
+                  >
+                    Tiền mặt
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod("VNPAY")}
+                    className={`py-2 rounded-xl text-[11px] font-bold transition-all border ${paymentMethod === "VNPAY" ? "bg-[#00704A] border-[#00704A] text-white shadow-md" : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"}`}
+                  >
+                    Thẻ VNPAY
+                  </button>
+                </div>
+                {paymentMethod === "VNPAY" && (
+                  <div className="text-[9px] text-amber-400/80 italic text-center leading-normal">
+                    * Khách hàng quét mã QR trên màn hình phụ để thanh toán thẻ test NCB Sandbox
+                  </div>
+                )}
+              </div>
               {/* Total + Submit */}
               <div className="p-4 border-t border-white/10 bg-[#1E3932]">
                 <div className="flex justify-between items-end mb-4">
@@ -521,6 +558,132 @@ export default function POSMachine() {
           </div>
         )}
       </div>
+
+      {/* VNPAY POS Checkout Modal Overlay */}
+      {activeVnpayOrder && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[9999]">
+          <div className="bg-[#1E3932] border border-white/10 p-8 rounded-[2.5rem] w-full max-w-lg shadow-2xl relative overflow-hidden text-white">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-sky-400/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-sky-500/20 p-2.5 rounded-xl">
+                  <CreditCard className="size-5 text-sky-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black tracking-tight">Thanh toán POS qua Thẻ ATM</h2>
+                  <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest mt-0.5">Powered by VNPay Sandbox</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setActiveVnpayOrder(null)}
+                className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+              >
+                <X className="size-4 text-white/40" />
+              </button>
+            </div>
+
+            {/* Instructions */}
+            <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-2xl mb-5 text-[11px] text-sky-200 leading-relaxed font-semibold">
+              <span className="font-extrabold text-sky-300">Hướng dẫn cho Thu ngân:</span> Đọc thông tin thẻ test dưới đây cho khách hàng nhập, hoặc bấm <span className="text-amber-300 font-extrabold uppercase">"Mở Cổng VNPAY"</span> để hỗ trợ khách thanh toán tại chỗ. Nhập mã OTP <span className="text-amber-300 font-extrabold">123456</span>.
+            </div>
+
+            {/* NCB ATM Sandbox Mock Card */}
+            <div className="bg-gradient-to-tr from-[#1E3932] to-[#0d6141] border border-white/10 p-5 rounded-[1.8rem] shadow-2xl relative overflow-hidden mb-6">
+              {/* Chip & Logo */}
+              <div className="flex justify-between items-center mb-6">
+                <div className="w-10 h-7 bg-amber-400/20 rounded-md border border-amber-400/40 relative overflow-hidden">
+                  <div className="absolute inset-y-0 left-1/3 w-px bg-amber-400/30" />
+                  <div className="absolute inset-y-0 left-2/3 w-px bg-amber-400/30" />
+                  <div className="absolute inset-x-0 top-1/2 h-px bg-amber-400/30" />
+                </div>
+                <span className="text-xs font-black tracking-widest text-[#00704A] bg-white px-2 py-0.5 rounded-lg">NCB TEST CARD</span>
+              </div>
+
+              {/* Card Number */}
+              <div className="mb-4">
+                <span className="text-[9px] text-white/30 font-bold block uppercase tracking-wider">Số thẻ ATM (NCB)</span>
+                <div className="flex items-center justify-between mt-0.5">
+                  <span className="text-base font-mono font-bold tracking-widest">9704 1985 2619 1432 198</span>
+                  <button 
+                    onClick={() => handleCopy("9704198526191432198", "Số thẻ")}
+                    className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors"
+                    title="Sao chép số thẻ"
+                  >
+                    <Copy className="size-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Row */}
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <span className="text-[8px] text-white/30 font-bold block uppercase tracking-wider">Tên chủ thẻ</span>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <span className="text-[11px] font-mono font-bold uppercase truncate">NGUYEN VAN A</span>
+                    <button 
+                      onClick={() => handleCopy("NGUYEN VAN A", "Tên chủ thẻ")}
+                      className="p-1 bg-white/5 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors ml-1"
+                    >
+                      <Copy className="size-3" />
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[8px] text-white/30 font-bold block uppercase tracking-wider">Ngày phát hành</span>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <span className="text-[11px] font-mono font-bold">07/15</span>
+                    <button 
+                      onClick={() => handleCopy("07/15", "Ngày phát hành")}
+                      className="p-1 bg-white/5 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors ml-1"
+                    >
+                      <Copy className="size-3" />
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[8px] text-white/30 font-bold block uppercase tracking-wider">Mật khẩu OTP</span>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <span className="text-[11px] font-mono font-extrabold text-amber-300">123456</span>
+                    <button 
+                      onClick={() => handleCopy("123456", "Mã OTP")}
+                      className="p-1 bg-white/5 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors ml-1"
+                    >
+                      <Copy className="size-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Launcher & Actions */}
+            <div className="space-y-3">
+              <a
+                href={activeVnpayOrder.payment_url || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 bg-amber-400 hover:bg-amber-500 text-[#1E3932] font-black rounded-2xl text-xs flex items-center justify-center gap-2.5 shadow-xl shadow-amber-400/20 active:scale-[0.98] transition-all uppercase tracking-widest text-center"
+              >
+                <Smartphone className="size-4" />
+                Mở cổng thanh toán VNPAY
+              </a>
+              <button
+                onClick={() => {
+                  confirmPayment(activeVnpayOrder.id);
+                  setActiveVnpayOrder(null);
+                }}
+                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all uppercase tracking-widest"
+              >
+                <CheckCircle className="size-4" />
+                Xác nhận đã thanh toán xong
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
