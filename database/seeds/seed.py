@@ -66,14 +66,14 @@ CATEGORIES = [
 ]
 
 PRODUCTS = [
-    {"name": "Cà phê đen đá", "price": 25000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1514432324607-a2ce78c73c16?q=80&w=1470&auto=format&fit=crop"},
-    {"name": "Cà phê sữa đá", "price": 29000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1620054707328-973e80c44c50?q=80&w=1470&auto=format&fit=crop"},
-    {"name": "Bạc xỉu", "price": 35000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1572442388796-11668a67e53d?q=80&w=1478&auto=format&fit=crop"},
-    {"name": "Trà sữa trân châu", "price": 35000, "category_id": 2, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1622283088737-1249b29e616c?q=80&w=1470&auto=format&fit=crop"},
-    {"name": "Trà đào cam sả", "price": 40000, "category_id": 3, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=1470&auto=format&fit=crop"},
-    {"name": "Sinh tố bơ", "price": 45000, "category_id": 4, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1626895316335-50269e94443a?q=80&w=1470&auto=format&fit=crop"},
-    {"name": "Nước ép cam", "price": 39000, "category_id": 4, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1600271886742-f049cd451bba?q=80&w=1587&auto=format&fit=crop"},
-    {"name": "Hạt dưa", "price": 15000, "category_id": 5, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1596649282361-0498b813b194?q=80&w=1328&auto=format&fit=crop"},
+    {"name": "Cà phê đen đá", "price": 25000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=800"},
+    {"name": "Cà phê sữa đá", "price": 29000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=800"},
+    {"name": "Bạc xỉu", "price": 35000, "category_id": 1, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=800"},
+    {"name": "Trà sữa trân châu", "price": 35000, "category_id": 2, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1558857563-b37102e956e1?w=800"},
+    {"name": "Trà đào cam sả", "price": 40000, "category_id": 3, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800"},
+    {"name": "Sinh tố bơ", "price": 45000, "category_id": 4, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1605807646983-377bc5a76493?w=800"},
+    {"name": "Nước ép cam", "price": 39000, "category_id": 4, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=800"},
+    {"name": "Hạt dưa", "price": 15000, "category_id": 5, "status_id": 1, "image_url": "https://images.unsplash.com/photo-1599505500854-94473de37996?w=800"},
 ]
 
 
@@ -153,7 +153,17 @@ def run_seed():
         seed_table(db, Category, CATEGORIES, "category_name")
 
         print("Seeding products...")
-        seed_table(db, Product, PRODUCTS, "name")
+        for prod_data in PRODUCTS:
+            existing = db.query(Product).filter(
+                Product.name == prod_data["name"]
+            ).first()
+            if existing:
+                existing.image_url = prod_data["image_url"]
+                existing.price = prod_data["price"]
+                existing.status_id = prod_data["status_id"]
+            else:
+                db.add(Product(**prod_data))
+        db.commit()
 
         print("Seed completed successfully!")
     except Exception as e:
