@@ -54,7 +54,7 @@ if [ -f ".env" ]; then
 else
     cp .env.example .env
     echo ""
-    echo "⚠️  HÃY CHỈNH SỬA FILE .env TRƯỚC KHI TIẾP TỤC!"
+    echo "  HÃY CHỈNH SỬA FILE .env TRƯỚC KHI TIẾP TỤC!"
     echo "   nano ~/Coffee-Manager/.env"
     echo ""
     echo "Đặc biệt chú ý:"
@@ -81,7 +81,7 @@ docker compose exec -T backend python -m database.init_db || true
 
 echo ""
 echo "=========================================="
-echo "  ✅ Setup hoàn tất!"
+echo "   Setup hoàn tất!"
 echo "=========================================="
 echo ""
 echo "Truy cập: http://32.236.13.233"
@@ -90,5 +90,5 @@ echo ""
 echo "Kiểm tra logs: docker compose logs -f"
 echo "Kiểm tra status: docker compose ps"
 echo ""
-echo "⚠️  Nhớ copy file serviceAccountKey.json (nếu cần Firebase):"
+echo "  Nhớ copy file serviceAccountKey.json (nếu cần Firebase):"
 echo "   scp backend/serviceAccountKey.json ubuntu@32.236.13.233:~/Coffee-Manager/backend/"
