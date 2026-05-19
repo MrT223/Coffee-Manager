@@ -93,6 +93,12 @@ def create_payment_url(
         
     payment_url = build_vnpay_url(input_data, vnp_hash_secret, vnp_payment_url)
     
+    print("=================== VNPAY DEBUG ===================")
+    print(f"[VNPAY DEBUG] input_data: {input_data}")
+    print(f"[VNPAY DEBUG] vnp_hash_secret: {vnp_hash_secret}")
+    print(f"[VNPAY DEBUG] payment_url: {payment_url}")
+    print("===================================================")
+    
     return payment_url, vnp_txn_ref
 
 
