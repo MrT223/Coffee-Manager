@@ -109,7 +109,7 @@ function MainLayout() {
         const token = localStorage.getItem("access_token");
         const cfg = { headers: { Authorization: `Bearer ${token}` } };
         // Fetch full profile (including birthday and notification flags)
-        const profileRes = await axios.get("http://127.0.0.1:8000/api/profile/me", cfg);
+        const profileRes = await axios.get("/api/profile/me", cfg);
         const profile = profileRes.data;
         
         // Update currentUser state with new data
@@ -137,9 +137,9 @@ function MainLayout() {
       try {
         setLoading(true);
         const [prodRes, catRes, comboRes] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/api/products/"),
-          axios.get("http://127.0.0.1:8000/api/categories/"),
-          axios.get("http://127.0.0.1:8000/api/combos/?active_only=true")
+          axios.get("/api/products/"),
+          axios.get("/api/categories/"),
+          axios.get("/api/combos/?active_only=true")
         ]);
         const freshProducts = prodRes.data || [];
         const combos = comboRes.data || [];

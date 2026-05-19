@@ -27,7 +27,7 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
   useEffect(() => {
     if (currentUser?.id) {
       setFetchingRewards(true);
-      axios.get(`http://127.0.0.1:8000/api/user-rewards/my-rewards/${currentUser.id}`)
+      axios.get(`/api/user-rewards/my-rewards/${currentUser.id}`)
         .then(res => setUserRewards(res.data || []))
         .catch(err => console.error("Lỗi fetch quà:", err))
         .finally(() => setFetchingRewards(false));
@@ -62,7 +62,7 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
     pollingRef.current = setInterval(async () => {
       try {
         const res = await axios.get(
-          `http://127.0.0.1:8000/api/vnpay/payment-status/${orderId}`,
+          `/api/vnpay/payment-status/${orderId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
@@ -164,7 +164,7 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
         };
 
         const res = await axios.post(
-          "http://127.0.0.1:8000/api/vnpay/create-payment",
+          "/api/vnpay/create-payment",
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -200,7 +200,7 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
           })),
           user_reward_id: selectedReward ? selectedReward.id : null
         };
-        await axios.post("http://127.0.0.1:8000/api/orders/", orderPayload);
+        await axios.post("/api/orders/", orderPayload);
         onCompleteOrder(); 
         toast.success("Đặt hàng thành công! Đơn hàng đang được quán xử lý.");
         navigate("/cart");

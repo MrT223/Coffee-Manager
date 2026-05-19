@@ -27,8 +27,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     
     try {
       const url = isLogin 
-        ? "http://127.0.0.1:8000/api/auth/login" 
-        : "http://127.0.0.1:8000/api/auth/register";
+        ? "/api/auth/login" 
+        : "/api/auth/register";
       
       const payload = isLogin 
         ? { username: formData.username, password: formData.password }

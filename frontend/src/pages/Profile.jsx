@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 
 // ── Helpers ─────────────────────────────────────────────
 const fmt = (n) => new Intl.NumberFormat("vi-VN").format(Math.round(n));

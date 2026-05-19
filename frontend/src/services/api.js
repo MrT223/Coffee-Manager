@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // Địa chỉ Backend FastAPI của bạn
+  baseURL: '/api', // Địa chỉ Backend FastAPI của bạn (relative path)
 });
 
 // Hàm lấy danh sách sản phẩm từ Backend

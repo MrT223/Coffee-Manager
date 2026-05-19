@@ -6,7 +6,7 @@ import { Search, Plus, Minus, Trash2, LogOut, ShoppingCart, BarChart3, Clipboard
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Legend } from "recharts";
 import { toast } from "react-hot-toast";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 const fmt = (n) => new Intl.NumberFormat("vi-VN").format(n);
 
 // Custom Premium Dropdown Component

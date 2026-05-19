@@ -5,7 +5,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import CustomSelect from "./CustomSelect";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 const EMPTY_COMBO = { name: "", description: "", image_url: "", discount_type: "FIXED", discount_value: 0, is_active: true, items: [] };
 
 export default function ComboTab({ products }) {

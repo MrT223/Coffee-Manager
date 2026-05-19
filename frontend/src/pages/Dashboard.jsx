@@ -8,7 +8,7 @@ import {
 import { motion } from "framer-motion";
 import axios from "axios";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 
 function StatCard({ icon: Icon, label, value, sub, color, delay = 0 }) {
   const colorMap = {

@@ -7,7 +7,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 
 export default function Loyalty({ currentUser }) {
   const [activeTab, setActiveTab] = useState("benefits");

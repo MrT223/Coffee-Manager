@@ -17,7 +17,7 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
       const fetchOrders = async () => {
         try {
           setLoadingOrders(true);
-          const res = await axios.get("http://127.0.0.1:8000/api/orders/my");
+          const res = await axios.get("/api/orders/my");
           setOrders(res.data || []);
         } catch (error) {
           console.error("Lỗi tải đơn hàng:", error);
@@ -76,8 +76,8 @@ export default function Cart({ cart, removeFromCart, cartTotal, updateQty, curre
               toast.dismiss(t.id);
               try {
                 setCancelling(orderId);
-                await axios.put(`http://127.0.0.1:8000/api/orders/${orderId}/status`, { status_id: 5 });
-                const res = await axios.get("http://127.0.0.1:8000/api/orders/my");
+                await axios.put(`/api/orders/${orderId}/status`, { status_id: 5 });
+                const res = await axios.get("/api/orders/my");
                 setOrders(res.data || []);
                 setSelectedOrder(null);
                 toast.success("Đã hủy đơn hàng thành công");
