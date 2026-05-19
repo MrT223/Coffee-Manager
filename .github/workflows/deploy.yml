@@ -32,7 +32,10 @@ jobs:
             sleep 5
 
             echo "===  Running database migrations ==="
+            docker compose exec -T backend python -m database.migrate_user_columns || true
             docker compose exec -T backend python -m database.migrate_vnpay || true
+            docker compose exec -T backend python -m database.migrate_birthday || true
+            docker compose exec -T backend python -m database.migrate_combo_loyalty || true
             docker compose exec -T backend python -m database.init_db || true
 
             echo "===  Cleaning up old Docker images ==="

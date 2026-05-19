@@ -82,15 +82,22 @@ INSERT INTO point_types (type_name, description) VALUES
 -- 2.1 USERS – Tài khoản người dùng
 -- UC: UC-01, UC-02, UC-03, UC-21, UC-25, UC-26
 CREATE TABLE users (
-    id           SERIAL PRIMARY KEY,
-    username     VARCHAR(100) NOT NULL UNIQUE,
-    password     VARCHAR(255) NOT NULL,              -- Bcrypt hash
-    role_id      INT          NOT NULL DEFAULT 1,
-    total_points INT          NOT NULL DEFAULT 0 CHECK (total_points >= 0),
-    avatar_url   VARCHAR(500),
-    is_active    BOOLEAN      NOT NULL DEFAULT TRUE,
-    created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    id                     SERIAL PRIMARY KEY,
+    username               VARCHAR(100) NOT NULL UNIQUE,
+    password               VARCHAR(255) NOT NULL,              -- Bcrypt hash
+    full_name              VARCHAR(200),
+    email                  VARCHAR(200),
+    role_id                INT          NOT NULL DEFAULT 1,
+    total_points           INT          NOT NULL DEFAULT 0 CHECK (total_points >= 0),
+    birthday               DATE,
+    last_birthday_wish_year INT,
+    birthday_locked        BOOLEAN      NOT NULL DEFAULT FALSE,
+    total_exp              INT          NOT NULL DEFAULT 0 CHECK (total_exp >= 0),
+    tier_id                INT          NOT NULL DEFAULT 1,
+    avatar_url             VARCHAR(500),
+    is_active              BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at             TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at             TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
 
     CONSTRAINT fk_users_role
         FOREIGN KEY (role_id) REFERENCES roles (id)
