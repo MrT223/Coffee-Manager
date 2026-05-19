@@ -5,7 +5,7 @@ import axios from "axios";
 import { 
   LayoutDashboard, ShoppingCart, CupSoda, Sandwich, Settings, 
   Users, Search, MapPin, LogOut, Gift, ClipboardList, 
-  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus, Monitor, UserCircle
+  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus, Monitor, UserCircle, MessageSquare
 } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, Transition } from '@headlessui/react';
@@ -26,6 +26,7 @@ import Profile from "./pages/Profile";
 import POSMachine from "./pages/POSMachine";
 import CustomerDisplay from "./pages/CustomerDisplay";
 import PaymentReturn from "./pages/PaymentReturn";
+import Feedback from "./pages/Feedback";
 
 // Cấu hình Axios Interceptor để tự động gắn Token
 axios.interceptors.request.use((config) => {
@@ -288,6 +289,7 @@ function MainLayout() {
           <SidebarLink icon={Coffee} label="Sản phẩm" path="/products" active={location.pathname === "/products"} onClick={navigate} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
           <SidebarLink icon={Sandwich} label="Thực đơn" path="/menu" active={location.pathname === "/menu" || location.pathname === "/"} onClick={navigate} />
           <SidebarLink icon={Gift} label="Loyalty" path="/loyalty" active={location.pathname === "/loyalty"} onClick={navigate} visible={currentUser?.role_id === 1} />
+          <SidebarLink icon={MessageSquare} label="Gửi phản hồi" path="/feedback" active={location.pathname === "/feedback"} onClick={navigate} visible={currentUser?.role_id === 1} />
           <SidebarLink icon={UserCircle} label="Hồ sơ" path="/profile" active={location.pathname === "/profile"} onClick={navigate} visible={!!currentUser} />
           <SidebarLink icon={Users} label="Tài khoản" path="/admin" active={location.pathname === "/admin"} onClick={navigate} visible={currentUser?.role_id === 3} />
           <SidebarLink icon={Gift} label="Điểm & Quà" path="/admin/rewards" active={location.pathname === "/admin/rewards"} onClick={navigate} visible={currentUser?.role_id === 3} />
@@ -371,6 +373,7 @@ function MainLayout() {
             <Route path="/admin" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><AdminPanel /></ProtectedRoute>} />
             <Route path="/admin/rewards" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[3]}><RewardsManagement /></ProtectedRoute>} />
             <Route path="/payment-return" element={<PaymentReturn />} />
+            <Route path="/feedback" element={<ProtectedRoute currentUser={currentUser} allowedRoles={[1]}><Feedback currentUser={currentUser} /></ProtectedRoute>} />
           </Routes>
         </main>
 
