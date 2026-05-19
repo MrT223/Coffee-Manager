@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 import { auth } from '../firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = "/api";
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
