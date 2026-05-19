@@ -1,7 +1,7 @@
 // src/pages/CustomerDisplay.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { QRCodeSVG } from "qrcode.react";
+
 import { Coffee, CreditCard, Receipt, Smartphone, Clock } from "lucide-react";
 
 const API = "http://127.0.0.1:8000/api";
@@ -162,8 +162,12 @@ export default function CustomerDisplay() {
               {/* Right - QR Code */}
               <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm flex flex-col items-center justify-center">
                 <h2 className="text-lg font-extrabold mb-4 flex items-center gap-2"><Smartphone className="size-5 text-[#00704A]" /> Quét mã để thanh toán</h2>
-                <div className="bg-white p-4 rounded-2xl mb-4">
-                  <QRCodeSVG value={qrValue} size={220} level="H" />
+                <div className="bg-white p-4 rounded-2xl mb-4 flex items-center justify-center">
+                  <img
+                    src={qrValue}
+                    alt="Bank QR Code"
+                    className="w-[220px] h-[220px] object-contain rounded-xl"
+                  />
                 </div>
                 <p className="text-white/40 text-xs text-center max-w-[250px]">
                   Quý khách vui lòng quét mã QR bằng ứng dụng ngân hàng để hoàn tất thanh toán

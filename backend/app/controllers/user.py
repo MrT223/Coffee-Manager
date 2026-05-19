@@ -16,8 +16,6 @@ def create_user(db: Session, user: UserCreate):
     db_user = User(
         username=user.username,
         password=hashed_password,
-        full_name=user.full_name,
-        email=user.email,
         role_id=1,
         total_points=0
     )

@@ -18,8 +18,6 @@ class User(Base):
     birthday_locked = Column(Boolean, nullable=False, default=False)
     total_exp = Column(Integer, nullable=False, default=0)
     tier_id = Column(Integer, ForeignKey("member_tiers.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False, default=1)
-    full_name = Column(String(200), nullable=True)
-    email = Column(String(200), nullable=True)
     avatar_url = Column(String(500), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

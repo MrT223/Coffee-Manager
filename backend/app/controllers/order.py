@@ -12,7 +12,7 @@ from database.models.combo import Combo
 from database.models.user_reward import UserReward
 from database.models.user import User
 from decimal import Decimal
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 from app.controllers.combo import _calc_combo_prices
 
 def create_order(db: Session, order_in: OrderCreate):
@@ -133,7 +133,9 @@ def create_order(db: Session, order_in: OrderCreate):
         total_price=total_price,
         status_id=1,  # Chờ xác nhận
         channel=order_in.channel,
-        staff_id=order_in.staff_id
+        staff_id=order_in.staff_id,
+        payment_method=getattr(order_in, 'payment_method', 'CASH'),
+        vnp_txn_ref=getattr(order_in, 'vnp_txn_ref', None),
     )
     db.add(db_order)
     db.flush()
@@ -185,7 +187,7 @@ def update_order_status(db: Session, order_id: int, status_id: int):
     old_status = db_order.status_id
     db_order.status_id = status_id
     
-    # Nếu đơn hàng bị HỦY (status_id=5) và trước đó chưa bị hủy → HOÀN KHO
+    # Nếu đơn hàng bị HỦY (status_id=5) và trước đó chưa bị hủy → HOÀN KHO & HOÀN VOUCHER
     if status_id == 5 and old_status != 5:
         for detail in db_order.order_details:
             product = db.query(Product).filter(Product.id == detail.product_id).first()
@@ -193,6 +195,13 @@ def update_order_status(db: Session, order_id: int, status_id: int):
                 product.quantity += detail.quantity
             if product:
                 controller_product.check_and_update_status(product)
+        
+        # Hoàn lại ưu đãi (UserReward) nếu có
+        user_reward = db.query(UserReward).filter(UserReward.order_id == order_id).first()
+        if user_reward:
+            user_reward.is_used = False
+            user_reward.order_id = None
+            user_reward.used_at = None
     
     db.commit()
     db.refresh(db_order)
@@ -206,6 +215,39 @@ def update_order_status(db: Session, order_id: int, status_id: int):
         )
     
     return db_order
+
+
+def cancel_expired_vnpay_orders(db: Session):
+    """
+    Quét các đơn hàng VNPAY có trạng thái 'Chờ xác nhận' (status_id=1)
+    và thời gian tạo > 15 phút để chuyển sang 'Đã hủy' (status_id=5) và hoàn kho.
+    """
+    # Lấy tất cả đơn hàng VNPAY đang chờ xác nhận (số lượng thường rất ít)
+    pending_orders = db.query(Order).filter(
+        Order.payment_method == "VNPAY",
+        Order.status_id == 1
+    ).all()
+    
+    canceled_count = 0
+    now = datetime.now(timezone.utc) if datetime.now().astimezone().tzinfo else datetime.now()
+    
+    for order in pending_orders:
+        order_date = order.order_date
+        # Đảm bảo so sánh cùng timezone-aware hoặc timezone-naive
+        if order_date.tzinfo is not None and now.tzinfo is None:
+            now = datetime.now(timezone.utc)
+        elif order_date.tzinfo is None and now.tzinfo is not None:
+            now = datetime.now()
+            
+        time_diff = now - order_date
+        if time_diff.total_seconds() > 900:  # 15 phút = 900 giây
+            try:
+                update_order_status(db, order.id, status_id=5)
+                canceled_count += 1
+            except Exception as e:
+                print(f"Lỗi tự động hủy đơn #{order.id}: {e}")
+                
+    return canceled_count
 
 
 # ============================================================

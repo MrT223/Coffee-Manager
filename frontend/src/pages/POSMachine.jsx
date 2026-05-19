@@ -324,32 +324,10 @@ export default function POSMachine() {
                       onChange={e => setCustomerPhone(e.target.value)} onBlur={lookupCustomer} onKeyDown={e => e.key === "Enter" && lookupCustomer()}
                       className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 outline-none focus:border-[#00704A]/50" />
                   </div>
-                  {!customerUser && customerPhone.length >= 10 && (
-                    <button 
-                      onClick={async () => {
-                        try {
-                          const token = localStorage.getItem("access_token");
-                          const res = await axios.post(`${API}/auth/pos-register`, { username: customerPhone }, { headers: { Authorization: `Bearer ${token}` } });
-                          setCustomerUser(res.data.user);
-                          toast.success("Đã tạo tài khoản nhanh!");
-                        } catch (e) {
-                          toast.error("Lỗi tạo tài khoản");
-                        }
-                      }}
-                      className="px-3 bg-[#00704A] text-white text-[10px] font-bold rounded-xl hover:bg-[#00804f] transition-colors"
-                    >
-                      Tạo nhanh
-                    </button>
-                  )}
                 </div>
                 {customerUser && (
-                  <div className="mt-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[10px] text-emerald-400 font-bold flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <CheckCircle className="size-3" /> KH: {customerUser.username} · {customerUser.total_points || 0}đ
-                    </div>
-                    <button onClick={() => { setCustomerUser(null); setCustomerPhone(""); }} className="p-1 hover:bg-white/10 rounded-md">
-                      <X className="size-3 text-white/30" />
-                    </button>
+                  <div className="mt-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[10px] text-emerald-400 font-bold flex items-center gap-1.5">
+                    <CheckCircle className="size-3" /> KH: {customerUser.username} · Điểm: {customerUser.total_points}
                   </div>
                 )}
               </div>

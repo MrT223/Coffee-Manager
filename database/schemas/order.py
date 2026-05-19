@@ -23,6 +23,7 @@ class OrderCreate(OrderBase):
     user_reward_id: Optional[int] = None
     channel: str = "ONLINE"
     staff_id: Optional[int] = None
+    payment_method: str = "CASH"
 
 
 class OrderRead(OrderBase):
@@ -31,6 +32,9 @@ class OrderRead(OrderBase):
     channel: str = "ONLINE"
     staff_id: Optional[int] = None
     staff_username: Optional[str] = None
+    payment_method: str = "CASH"
+    vnp_txn_ref: Optional[str] = None
+    vnp_transaction_no: Optional[str] = None
     order_date: datetime
     updated_at: datetime
     order_details: List[OrderDetailRead] = []

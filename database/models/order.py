@@ -14,6 +14,9 @@ class Order(Base):
     status_id = Column(Integer, ForeignKey("order_statuses.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False, default=1)
     channel = Column(String(10), nullable=False, default="ONLINE")
     staff_id = Column(Integer, ForeignKey("users.id", onupdate="CASCADE", ondelete="SET NULL"), nullable=True)
+    payment_method = Column(String(10), nullable=False, default="CASH")
+    vnp_txn_ref = Column(String(50), nullable=True, unique=True, index=True)
+    vnp_transaction_no = Column(String(50), nullable=True)
     order_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
