@@ -6,6 +6,8 @@ from typing import Optional
 class UserBase(BaseModel):
     username: str = Field(..., max_length=100)
     birthday: Optional[date] = None
+    full_name: Optional[str] = None
+    email: Optional[str] = None
 
 
 class UserCreate(UserBase):

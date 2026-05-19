@@ -11,6 +11,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), unique=True, nullable=False, index=True)
     password = Column(String(255), nullable=False)  # Bcrypt hash
+    full_name = Column(String(200), nullable=True)
+    email = Column(String(200), nullable=True)
     role_id = Column(Integer, ForeignKey("roles.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=False, default=1)
     total_points = Column(Integer, nullable=False, default=0)
     birthday = Column(Date, nullable=True)
