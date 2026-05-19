@@ -36,8 +36,47 @@ export default function Checkout({ cart, cartTotal, cartOriginalTotal, onComplet
   }, [showQR, paymentUrl]);
 
   const handleCopy = (text, label) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`Đã sao chép ${label}!`);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          toast.success(`Đã sao chép ${label}!`);
+        })
+        .catch(err => {
+          console.error("Failed to copy using clipboard API:", err);
+          fallbackCopyTextToClipboard(text, label);
+        });
+    } else {
+      fallbackCopyTextToClipboard(text, label);
+    }
+  };
+
+  const fallbackCopyTextToClipboard = (text, label) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        toast.success(`Đã sao chép ${label}!`);
+      } else {
+        toast.error("Không thể sao chép. Vui lòng chọn và sao chép thủ công.");
+      }
+    } catch (err) {
+      console.error("Fallback: Oops, unable to copy", err);
+      toast.error("Không thể sao chép. Vui lòng chọn và sao chép thủ công.");
+    }
+
+    document.body.removeChild(textArea);
   };
 
   useEffect(() => {
