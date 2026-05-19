@@ -10,7 +10,7 @@ import { toast } from "react-hot-toast";
 import CustomSelect from "../components/CustomSelect";
 import ComboTab from "../components/ComboTab";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 
 const EMPTY_PRODUCT = { name: "", price: "", quantity: null, category_id: "", image_url: "" };
 const EMPTY_CATEGORY = { category_name: "" };

@@ -8,7 +8,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import CustomSelect from "../components/CustomSelect";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 
 const ROLE_MAP = {
   1: { label: "Customer", icon: UserCheck, cls: "bg-sky-500/20 text-sky-300" },

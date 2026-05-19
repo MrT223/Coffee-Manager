@@ -1,0 +1,42 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: 🚀 Deploy Coffee Manager
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+
+            echo "===  Pulling latest code ==="
+            cd ~/Coffee-Manager
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "===  Building & starting containers ==="
+            docker compose up -d --build --remove-orphans
+
+            echo "===  Waiting for database to be ready ==="
+            sleep 5
+
+            echo "===  Running database migrations ==="
+            docker compose exec -T backend python -m database.migrate_vnpay || true
+            docker compose exec -T backend python -m database.init_db || true
+
+            echo "===  Cleaning up old Docker images ==="
+            docker image prune -f
+
+            echo "===  Deployment complete! ==="
+            docker compose ps

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 
 const STATUS_MAP = {
   1: { label: "Chờ xác nhận", icon: Clock, cls: "bg-amber-500/20 text-amber-300", dot: "bg-amber-500" },

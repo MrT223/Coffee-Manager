@@ -4,7 +4,7 @@ import axios from "axios";
 
 import { Coffee, CreditCard, Receipt, Smartphone, Clock } from "lucide-react";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 const fmt = (n) => new Intl.NumberFormat("vi-VN").format(n);
 
 export default function CustomerDisplay() {

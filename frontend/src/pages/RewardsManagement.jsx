@@ -7,7 +7,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import CustomSelect from "../components/CustomSelect";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 
 const EMPTY_REWARD = { name: "", description: "", points_required: "", reward_type_id: 1, discount_value: "", image_url: "", quantity: "", is_active: true };
 
