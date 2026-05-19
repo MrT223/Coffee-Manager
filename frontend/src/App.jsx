@@ -5,7 +5,7 @@ import axios from "axios";
 import { 
   LayoutDashboard, ShoppingCart, CupSoda, Sandwich, Settings, 
   Users, Search, MapPin, LogOut, Gift, ClipboardList, 
-  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus, Monitor, UserCircle, MessageSquare
+  X, Trash2, ChevronRight, CreditCard, Coffee, Minus, Plus, Monitor, UserCircle, MessageSquare, UserPlus
 } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, Transition } from '@headlessui/react';
@@ -13,6 +13,7 @@ import { Toaster, toast } from 'react-hot-toast';
 
 import AuthModal from "./components/AuthModal";
 import BirthdayModal from "./components/BirthdayModal";
+import CreateCustomerModal from "./components/CreateCustomerModal";
 import Menu from "./pages/Menu";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -87,6 +88,7 @@ function MainLayout() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showBirthdayModal, setShowBirthdayModal] = useState(false);
+  const [showCreateCustomerModal, setShowCreateCustomerModal] = useState(false);
   
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -286,6 +288,7 @@ function MainLayout() {
         <nav className="flex-grow space-y-1">
           <SidebarLink icon={LayoutDashboard} label="Dashboard" path="/dashboard" active={location.pathname === "/dashboard"} onClick={navigate} visible={currentUser?.role_id === 3} />
           <SidebarLink icon={ClipboardList} label="Đơn hàng" path="/orders" active={location.pathname === "/orders"} onClick={navigate} visible={currentUser?.role_id === 2} />
+          <SidebarLink icon={UserPlus} label="Tạo TK khách" path="#create-customer" active={false} onClick={() => setShowCreateCustomerModal(true)} visible={currentUser?.role_id === 2} />
           <SidebarLink icon={Coffee} label="Sản phẩm" path="/products" active={location.pathname === "/products"} onClick={navigate} visible={currentUser?.role_id === 2 || currentUser?.role_id === 3} />
           <SidebarLink icon={Sandwich} label="Thực đơn" path="/menu" active={location.pathname === "/menu" || location.pathname === "/"} onClick={navigate} />
           <SidebarLink icon={Gift} label="Loyalty" path="/loyalty" active={location.pathname === "/loyalty"} onClick={navigate} visible={currentUser?.role_id === 1} />
@@ -469,6 +472,7 @@ function MainLayout() {
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLoginSuccess={(u) => setCurrentUser(u)} />
       <BirthdayModal isOpen={showBirthdayModal} onClose={() => setShowBirthdayModal(false)} username={currentUser?.username} />
+      <CreateCustomerModal isOpen={showCreateCustomerModal} onClose={() => setShowCreateCustomerModal(false)} />
     </div>
   );
 }

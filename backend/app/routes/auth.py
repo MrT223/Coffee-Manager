@@ -135,6 +135,47 @@ def pos_register(req: AuthRequest, db: Session = Depends(get_db), current_user =
         }
     }
 
+class StaffCreateCustomerRequest(BaseModel):
+    phone: str
+    full_name: str
+
+@router.post("/staff-create-customer")
+def staff_create_customer(req: StaffCreateCustomerRequest, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """UC-14: Staff tạo tài khoản cho khách hàng"""
+    # Chỉ Staff/Admin mới được sử dụng
+    if current_user.role_id not in [2, 3]:
+        raise HTTPException(status_code=403, detail="Bạn không có quyền thực hiện chức năng này")
+    
+    # Validate input
+    if not req.phone or not req.phone.strip():
+        raise HTTPException(status_code=400, detail="Số điện thoại không được để trống")
+    if not req.full_name or not req.full_name.strip():
+        raise HTTPException(status_code=400, detail="Họ tên không được để trống")
+    
+    # Kiểm tra trùng SĐT (username = SĐT khi tự đăng ký)
+    existing = crud_user.get_user_by_phone(db, phone=req.phone.strip())
+    if existing:
+        raise HTTPException(status_code=400, detail="Số điện thoại này đã được đăng ký")
+    
+    # Tạo tài khoản với mật khẩu mặc định '123456'
+    new_user = crud_user.create_customer_by_staff(
+        db, 
+        phone=req.phone.strip(), 
+        full_name=req.full_name.strip()
+    )
+    
+    return {
+        "message": "Tạo tài khoản thành công",
+        "user": {
+            "id": new_user.id,
+            "username": new_user.username,
+            "full_name": new_user.full_name,
+            "phone": req.phone.strip(),
+            "is_active": new_user.is_active
+        },
+        "default_password": "123456"
+    }
+
 @router.post("/login")
 def login(req: AuthRequest, db: Session = Depends(get_db)):
     # Hỗ trợ đăng nhập bằng email hoặc số điện thoại
