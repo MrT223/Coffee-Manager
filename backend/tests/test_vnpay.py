@@ -31,8 +31,8 @@ def simulate_vnpay_ipn(vnp_txn_ref: str, amount: int, response_code: str = "00")
     for key in sorted_keys:
         value = str(vnp_params[key])
         if value:
-            encoded_key = urllib.parse.quote(key, safe='')
-            encoded_value = urllib.parse.quote(value, safe='')
+            encoded_key = urllib.parse.quote_plus(key)
+            encoded_value = urllib.parse.quote_plus(value)
             hash_data_parts.append(f"{encoded_key}={encoded_value}")
     
     sign_data = "&".join(hash_data_parts)

@@ -18,9 +18,9 @@ def build_vnpay_url(vnp_params: dict, secret_key: str, vnp_url: str) -> str:
     for key in sorted_keys:
         value = str(vnp_params[key])
         if value:
-            # 2. BẮT BUỘC dùng quote(safe='') để mã hóa chuẩn RFC 3986 (khoảng trắng thành %20)
-            encoded_key = urllib.parse.quote(key, safe='')
-            encoded_value = urllib.parse.quote(value, safe='')
+            # 2. BẮT BUỘC dùng quote_plus để mã hóa (khoảng trắng thành +)
+            encoded_key = urllib.parse.quote_plus(key)
+            encoded_value = urllib.parse.quote_plus(value)
             
             hash_data_parts.append(f"{encoded_key}={encoded_value}")
 
@@ -93,6 +93,12 @@ def create_payment_url(
         
     payment_url = build_vnpay_url(input_data, vnp_hash_secret, vnp_payment_url)
     
+    print("=================== VNPAY DEBUG ===================")
+    print(f"[VNPAY DEBUG] input_data: {input_data}")
+    print(f"[VNPAY DEBUG] vnp_hash_secret: {vnp_hash_secret}")
+    print(f"[VNPAY DEBUG] payment_url: {payment_url}")
+    print("===================================================")
+    
     return payment_url, vnp_txn_ref
 
 
@@ -124,9 +130,9 @@ def verify_vnpay_signature(vnp_params: dict, vnp_hash_secret: str) -> bool:
     for key in sorted_keys:
         value = str(input_data[key])
         if value:
-            # BẮT BUỘC dùng quote(safe='') để mã hóa chuẩn RFC 3986 (khoảng trắng thành %20)
-            encoded_key = urllib.parse.quote(key, safe='')
-            encoded_value = urllib.parse.quote(value, safe='')
+            # BẮT BUỘC dùng quote_plus để mã hóa (khoảng trắng thành +)
+            encoded_key = urllib.parse.quote_plus(key)
+            encoded_value = urllib.parse.quote_plus(value)
             
             hash_data_parts.append(f"{encoded_key}={encoded_value}")
 
