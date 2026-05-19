@@ -80,17 +80,35 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   };
 
   const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      const container = document.getElementById('recaptcha-container');
-      if (!container) return;
+    const container = document.getElementById('recaptcha-container');
+    if (!container) return;
 
+    // Nếu verifier cũ đã bị React xóa DOM element, cần tạo mới
+    if (window.recaptchaVerifier) {
+      try {
+        // Kiểm tra element gốc còn trong DOM không
+        const widgetElement = container.querySelector('iframe') || container.childElementCount > 0;
+        if (!widgetElement) {
+          // DOM element đã bị xóa, clear verifier cũ
+          window.recaptchaVerifier.clear();
+          window.recaptchaVerifier = null;
+        }
+      } catch (e) {
+        // Verifier lỗi, tạo mới
+        window.recaptchaVerifier = null;
+      }
+    }
+
+    if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'normal',
         'callback': (response) => {
           console.log("reCAPTCHA solved");
         },
         'expired-callback': () => {
-          window.recaptchaVerifier.reset();
+          if (window.recaptchaVerifier) {
+            window.recaptchaVerifier.reset();
+          }
         }
       });
     }
@@ -105,6 +123,15 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     try {
         // Đảm bảo reCAPTCHA đã sẵn sàng
         setupRecaptcha();
+        
+        if (!window.recaptchaVerifier) {
+          setError("Không thể khởi tạo reCAPTCHA. Vui lòng thử lại.");
+          setLoading(false);
+          return;
+        }
+
+        // Render reCAPTCHA widget nếu chưa render
+        await window.recaptchaVerifier.render();
         const appVerifier = window.recaptchaVerifier;
         
         // Normalize phone for Firebase (+84...)
@@ -126,6 +153,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         setShowOtpStep(true);
     } catch (err) {
         console.error("OTP Error:", err);
+        // Nếu reCAPTCHA bị lỗi, reset nó
+        if (window.recaptchaVerifier) {
+          try { window.recaptchaVerifier.clear(); } catch(e) {}
+          window.recaptchaVerifier = null;
+        }
         setError("Gửi OTP thất bại: " + (err.message || "Vui lòng thử lại."));
     } finally {
         setLoading(false);
@@ -143,10 +175,13 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 username: formData.username, 
                 password: "dummy" 
             });
+            // check-phone thành công, setLoading(false) trước để React render lại reCAPTCHA container
+            setLoading(false);
+            // Đợi DOM render xong rồi mới gửi OTP
+            await new Promise(resolve => setTimeout(resolve, 600));
             handleRequestOtp();
         } catch (err) {
             setError(err.response?.data?.detail || "Số điện thoại chưa được đăng ký");
-        } finally {
             setLoading(false);
         }
         return;
